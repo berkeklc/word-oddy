@@ -1,11 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import './TimedChallenge.css';
 
-const TimedChallenge = ({ word, children, onComplete, onTimeUp, bonusTime = 0 }) => {
+const TimedChallenge = ({ word, children, onComplete, onTimeUp, bonusTime = 0, onRetry }) => {
     const timeLimit = (word.timeLimit || word.config?.timeLimit || 15) + bonusTime;
 
     const [timeLeft, setTimeLeft] = useState(timeLimit);
     const [isRunning, setIsRunning] = useState(true);
+    const [showRetry, setShowRetry] = useState(false);
+
+    // Reset timer when bonusTime changes
+    useEffect(() => {
+        if (bonusTime > 0) {
+            setTimeLeft(prev => prev + bonusTime);
+        }
+    }, [bonusTime]);
 
     useEffect(() => {
         if (!isRunning || timeLeft <= 0) return;
@@ -14,6 +22,7 @@ const TimedChallenge = ({ word, children, onComplete, onTimeUp, bonusTime = 0 })
             setTimeLeft(prev => {
                 if (prev <= 1) {
                     setIsRunning(false);
+                    setShowRetry(true);
                     if (onTimeUp) onTimeUp();
                     return 0;
                 }
@@ -23,6 +32,13 @@ const TimedChallenge = ({ word, children, onComplete, onTimeUp, bonusTime = 0 })
 
         return () => clearInterval(timer);
     }, [isRunning, timeLeft, onTimeUp]);
+
+    const handleRetry = () => {
+        setTimeLeft(word.timeLimit || word.config?.timeLimit || 15);
+        setIsRunning(true);
+        setShowRetry(false);
+        if (onRetry) onRetry();
+    };
 
     const progress = (timeLeft / timeLimit) * 100;
     const isUrgent = timeLeft <= 5;
@@ -43,10 +59,15 @@ const TimedChallenge = ({ word, children, onComplete, onTimeUp, bonusTime = 0 })
 
             {timeLeft > 0 && children}
 
-            {timeLeft === 0 && (
-                <div className="time-up-message">
-                    <div className="time-up-icon">⏰</div>
-                    <div className="time-up-text">Time's Up!</div>
+            {showRetry && (
+                <div className="time-up-overlay">
+                    <div className="time-up-content">
+                        <div className="time-up-icon">⏰</div>
+                        <div className="time-up-text">Time's Up!</div>
+                        <button className="btn-retry" onClick={handleRetry}>
+                            🔄 Try Again
+                        </button>
+                    </div>
                 </div>
             )}
         </div>

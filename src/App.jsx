@@ -5,7 +5,6 @@ import LevelComplete from './components/LevelComplete'
 import StoryOverlay from './components/StoryOverlay'
 import ScoreBoard from './components/ScoreBoard'
 import InteractiveTutorial from './components/InteractiveTutorial'
-import PowerUpShop from './components/PowerUpShop'
 import LevelSelect from './components/LevelSelect'
 import Profile from './components/Profile'
 import ParticleSystem from './components/ParticleSystem'
@@ -320,14 +319,9 @@ function App() {
                             onComboUpdate={handleComboUpdate}
                             inventory={inventory}
                             onPowerUpUse={handlePowerUpUse}
+                            onPowerUpPurchase={handlePowerUpPurchase}
                         />
                     </main>
-
-                    <PowerUpShop
-                        score={score}
-                        onPurchase={handlePowerUpPurchase}
-                        inventory={inventory}
-                    />
 
                     {gameState === 'complete' && (
                         <LevelComplete

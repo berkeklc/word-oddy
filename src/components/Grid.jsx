@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import FloatingLetters from './FloatingLetters';
 import PowerUpBar from './PowerUpBar';
+import PowerUpShop from './PowerUpShop';
 import SelectionChallenge from './ChallengeTypes/SelectionChallenge';
 import ScrambledChallenge from './ChallengeTypes/ScrambledChallenge';
 import MissingLettersChallenge from './ChallengeTypes/MissingLettersChallenge';
@@ -10,7 +11,7 @@ import './Grid.css';
 import { soundManager } from '../utils/SoundManager';
 import { triggerParticles } from './ParticleSystem';
 
-const Grid = ({ level, onLevelComplete, score, onScoreUpdate, combo, onComboUpdate, inventory, onPowerUpUse }) => {
+const Grid = ({ level, onLevelComplete, score, onScoreUpdate, combo, onComboUpdate, inventory, onPowerUpUse, onPowerUpPurchase }) => {
     const [currentWordIndex, setCurrentWordIndex] = useState(0);
     const [currentInput, setCurrentInput] = useState('');
     const [solvedWords, setSolvedWords] = useState([]);
@@ -149,22 +150,15 @@ const Grid = ({ level, onLevelComplete, score, onScoreUpdate, combo, onComboUpda
         const success = onPowerUpUse(powerUpId);
         if (!success) return;
 
-        if (powerUpId === 'reveal') {
+        if (powerUpId === 'timeBonus') {
+            // Time Shard: Add 5 seconds to timer
+            setBonusTime(prev => prev + 5);
+            soundManager.playSuccess();
+        } else if (powerUpId === 'reveal') {
             // Vision Shard: Instant reveal for hidden words
             if (currentWord.challengeType === 'hidden') {
                 setRevealedHidden(true);
                 soundManager.playSuccess();
-                // Check if this completes the challenge (for hidden, it usually just reveals, user still needs to type? 
-                // Wait, HiddenWordChallenge auto-reveals. If we setRevealedHidden(true), it shows all letters.
-                // Does it auto-complete? The component logic says:
-                // if (revealed) setRevealedCount(word.answer.length);
-                // It displays input boxes only when revealedCount === length.
-                // So user still needs to type.
-                // BUT if the user wants "instant win" with powerup?
-                // The request said: "özel güç ile son harf bilinirse bölüm bitmiyor" -> "If last letter is known with special power, level doesn't end"
-                // This implies they WANT it to end.
-                // So let's check if we can auto-fill or just let them type.
-                // For 'reveal', let's auto-fill for typing challenges.
             } else {
                 // Or reveal one letter for typing
                 if (currentInput.length < currentWord.answer.length) {
@@ -193,19 +187,21 @@ const Grid = ({ level, onLevelComplete, score, onScoreUpdate, combo, onComboUpda
                 }
             }
         } else if (powerUpId === 'clear') {
-            // Cleansing Crystal: Clear OR add time
-            if (currentWord.challengeType === 'timed') {
-                setBonusTime(prev => prev + 5);
-                soundManager.playSuccess();
-            } else {
-                setCurrentInput('');
-                soundManager.playClick();
-            }
+            // Cleansing Crystal: Clear input
+            setCurrentInput('');
+            soundManager.playClick();
         }
     };
 
     const handleTimeUp = () => {
-        handleWrong();
+        soundManager.playError();
+        if (onScoreUpdate) onScoreUpdate(-20);
+        if (onComboUpdate) onComboUpdate(0);
+    };
+
+    const handleRetry = () => {
+        setCurrentInput('');
+        soundManager.playClick();
     };
 
     const renderChallenge = () => {
@@ -290,6 +286,7 @@ const Grid = ({ level, onLevelComplete, score, onScoreUpdate, combo, onComboUpda
                 <TimedChallenge
                     word={currentWord}
                     onTimeUp={handleTimeUp}
+                    onRetry={handleRetry}
                     bonusTime={bonusTime}
                 >
                     {challenge}
@@ -356,10 +353,18 @@ const Grid = ({ level, onLevelComplete, score, onScoreUpdate, combo, onComboUpda
                 </div>
             )}
 
+
             <PowerUpBar
                 inventory={inventory}
                 onUse={handlePowerUpActivate}
                 selectedWordId={!isComplete && currentWord ? currentWord.id : null}
+            />
+
+            <PowerUpShop
+                score={score}
+                onPurchase={onPowerUpPurchase}
+                inventory={inventory}
+                inTimedChallenge={currentWord?.challengeType === 'timed'}
             />
         </div>
     );

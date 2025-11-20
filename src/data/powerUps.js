@@ -9,6 +9,14 @@ export const powerUps = [
         starterAmount: 3 // Everyone starts with 3
     },
     {
+        id: 'timeBonus',
+        name: 'Time Shard',
+        description: 'Adds +5 seconds to your timer in timed challenges',
+        cost: 50,
+        icon: '⏱️',
+        uses: 0
+    },
+    {
         id: 'reveal',
         name: 'Vision Shard',
         description: 'Reveals one hidden letter in the selected word',
