@@ -1,0 +1,71 @@
+.story-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 150;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+}
+
+.story-content {
+    max-width: 400px;
+    text-align: center;
+}
+
+.story-title {
+    font-size: 2rem;
+    color: var(--accent-glow);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeIn 1s ease forwards;
+}
+
+.story-text {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+    min-height: 100px;
+    font-family: 'Georgia', serif;
+    /* More narrative feel */
+    font-style: italic;
+}
+
+.continue-prompt {
+    margin-top: 3rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-secondary);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    animation: pulse 2s infinite;
+}
+
+.continue-prompt.visible {
+    opacity: 1;
+    cursor: pointer;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}

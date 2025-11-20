@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root {
+    /* Clean Gothic Palette */
+    --bg-primary: #1a1428;
+    --bg-secondary: #2d2438;
+    --bg-card: #3d3250;
+
+    /* Pastels */
+    --lavender: #c4b5fd;
+    --rose: #fda4af;
+    --mint: #a7f3d0;
+    --lilac: #e9d5ff;
+
+    /* Accents */
+    --accent-color: #a78bfa;
+    --accent-glow: #c4b5fd;
+
+    /* Text */
+    --text-primary: #f5f3ff;
+    --text-secondary: #d8b4fe;
+
+    /* Tiles */
+    --tile-bg: #4c3b5c;
+    --tile-active: #6b5280;
+
+    /* Status */
+    --success: #a7f3d0;
+    --error: #fda4af;
+
+    /* Fonts */
+    --font-title: 'Cinzel', serif;
+    --font-body: 'Crimson Text', serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: var(--font-body);
+    background: linear-gradient(135deg, #1a1428 0%, #2d1b3d 50%, #1a1428 100%);
+    background-attachment: fixed;
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+    touch-action: manipulation;
+}
+
+#root {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--lavender), var(--accent-color));
+    border-radius: 4px;
+}

@@ -1,0 +1,121 @@
+.selection-challenge {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+.selected-display {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.selected-box {
+    width: 50px;
+    height: 60px;
+    background: var(--tile-bg);
+    border: 2px solid var(--tile-active);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.selected-box.filled {
+    background: var(--accent-color);
+    border-color: var(--accent-glow);
+    transform: scale(1.05);
+    animation: popIn 0.3s ease;
+}
+
+.letter-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    max-width: 350px;
+}
+
+.pool-letter {
+    width: 45px;
+    height: 50px;
+    background: var(--tile-bg);
+    border: 2px solid var(--tile-active);
+    border-radius: 8px;
+    color: white;
+    font-family: var(--font-main);
+    font-weight: 700;
+    font-size: 1.3rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pool-letter:hover:not(.used) {
+    background: var(--accent-color);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+}
+
+.pool-letter:active:not(.used) {
+    transform: scale(0.95);
+}
+
+.pool-letter.used {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background: var(--bg-secondary);
+}
+
+.selection-hint {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.8);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+
+    100% {
+        transform: scale(1.05);
+    }
+}
+
+.shake {
+    animation: shake 0.5s cubic-bezier(.36, .07, .19, .97);
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-8px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(8px);
+    }
+}

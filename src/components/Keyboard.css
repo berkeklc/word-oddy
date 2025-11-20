@@ -1,0 +1,176 @@
+.keyboard {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 15;
+    background: linear-gradient(180deg, transparent, rgba(26, 20, 40, 0.98) 20%);
+    backdrop-filter: blur(15px);
+    padding: 0.75rem 0.5rem env(safe-area-inset-bottom);
+    border-top: 1px solid rgba(196, 181, 253, 0.25);
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.5);
+}
+
+.keyboard-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.3rem;
+    margin-bottom: 0.4rem;
+}
+
+.keyboard-row:last-child {
+    margin-bottom: 0;
+}
+
+.key {
+    min-width: 28px;
+    height: 44px;
+    padding: 0 10px;
+    background: linear-gradient(135deg, var(--tile-bg), var(--bg-card));
+    border: 2px solid var(--tile-active);
+    border-radius: 8px;
+    color: var(--lavender);
+    font-family: var(--font-title);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.key::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(196, 181, 253, 0.4), transparent);
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.key:active::before {
+    width: 200%;
+    height: 200%;
+}
+
+.key:active {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+    border-color: var(--accent-glow);
+    color: white;
+    transform: scale(0.95);
+    box-shadow:
+        0 1px 5px rgba(196, 181, 253, 0.3),
+        inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.key.backspace {
+    min-width: 55px;
+    background: linear-gradient(135deg, rgba(253, 164, 175, 0.25), rgba(253, 164, 175, 0.15));
+    border-color: rgba(253, 164, 175, 0.5);
+    color: var(--rose);
+}
+
+.key.backspace:active {
+    background: linear-gradient(135deg, var(--rose), var(--error));
+    border-color: var(--error);
+    color: white;
+}
+
+/* Touch Feedback */
+@media (hover: none) and (pointer: coarse) {
+    .key {
+        min-width: 30px;
+        height: 46px;
+    }
+
+    .key:active {
+        transform: scale(0.92);
+        box-shadow:
+            0 0 20px rgba(196, 181, 253, 0.5),
+            inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+}
+
+/* Small Phones */
+@media (max-width: 360px) {
+    .keyboard {
+        padding: 0.6rem 0.4rem env(safe-area-inset-bottom);
+    }
+
+    .keyboard-row {
+        gap: 0.25rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .key {
+        min-width: 24px;
+        height: 42px;
+        padding: 0 8px;
+        font-size: 0.95rem;
+    }
+
+    .key.backspace {
+        min-width: 48px;
+    }
+}
+
+/* Medium Phones */
+@media (min-width: 361px) and (max-width: 420px) {
+    .key {
+        min-width: 28px;
+        height: 44px;
+    }
+
+    .key.backspace {
+        min-width: 55px;
+    }
+}
+
+/* Larger Devices */
+@media (min-width: 481px) {
+    .keyboard {
+        padding: 1rem 0.75rem env(safe-area-inset-bottom);
+    }
+
+    .keyboard-row {
+        gap: 0.4rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .key {
+        min-width: 32px;
+        height: 48px;
+        padding: 0 14px;
+        font-size: 1.1rem;
+    }
+
+    .key.backspace {
+        min-width: 65px;
+    }
+}
+
+/* Landscape Mode */
+@media (max-height: 600px) and (orientation: landscape) {
+    .keyboard {
+        padding: 0.5rem 0.4rem 0.5rem;
+    }
+
+    .keyboard-row {
+        margin-bottom: 0.3rem;
+    }
+
+    .key {
+        height: 38px;
+        font-size: 0.9rem;
+    }
+}

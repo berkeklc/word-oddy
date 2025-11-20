@@ -1,0 +1,60 @@
+.tile {
+    width: 100%;
+    aspect-ratio: 1;
+    background-color: var(--tile-bg);
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tile.hidden {
+    background-color: var(--bg-secondary);
+    opacity: 0.5;
+}
+
+.tile.revealed {
+    background-color: var(--tile-bg);
+}
+
+.tile.solved {
+    background-color: var(--success);
+    color: white;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+}
+
+.tile.active {
+    border: 2px solid var(--accent-color);
+    background-color: var(--tile-active);
+    transform: scale(1.05);
+    z-index: 2;
+}
+
+/* Reveal Animation */
+@keyframes revealTile {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    60% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.tile {
+    animation: revealTile 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}

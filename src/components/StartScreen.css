@@ -1,0 +1,213 @@
+.start-screen {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: linear-gradient(135deg, #1a1428 0%, #2d1b3d 50%, #1a1428 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-settings-corner {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    z-index: 10;
+}
+
+.btn-settings-corner:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(90deg);
+}
+
+.logo-container {
+    text-align: center;
+    z-index: 2;
+    animation: fadeIn 0.8s ease;
+    margin-bottom: 3rem;
+}
+
+.game-title {
+    font-family: var(--font-title);
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: var(--lavender);
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 30px rgba(196, 181, 253, 0.5);
+    animation: glow 2s ease-in-out infinite;
+    line-height: 1.1;
+}
+
+.highlight {
+    color: var(--accent-color);
+    text-shadow: 0 0 30px rgba(167, 139, 250, 0.6);
+}
+
+.subtitle {
+    font-family: var(--font-body);
+    font-size: 1.2rem;
+    font-style: italic;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+}
+
+.menu-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: 300px;
+    z-index: 2;
+    animation: slideUp 0.8s ease 0.2s backwards;
+}
+
+.btn-start {
+    width: 100%;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, var(--accent-color), var(--lavender));
+    border: none;
+    border-radius: 15px;
+    color: white;
+    font-family: var(--font-title);
+    font-size: 1.4rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(167, 139, 250, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-start:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(167, 139, 250, 0.6);
+}
+
+.btn-start:active {
+    transform: scale(0.98);
+}
+
+.secondary-actions {
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+}
+
+.btn-secondary {
+    flex: 1;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: var(--lavender);
+    font-family: var(--font-title);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    border-color: var(--lavender);
+}
+
+.footer-decoration {
+    position: absolute;
+    bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.6;
+}
+
+.lantern-icon {
+    font-size: 2rem;
+    filter: drop-shadow(0 0 10px rgba(255, 165, 0, 0.5));
+    animation: float 3s ease-in-out infinite;
+}
+
+.version-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes glow {
+
+    0%,
+    100% {
+        text-shadow: 0 0 20px rgba(196, 181, 253, 0.5);
+    }
+
+    50% {
+        text-shadow: 0 0 40px rgba(196, 181, 253, 0.8);
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@media (max-width: 480px) {
+    .game-title {
+        font-size: 2.8rem;
+    }
+
+    .btn-start {
+        padding: 1rem;
+        font-size: 1.2rem;
+    }
+}

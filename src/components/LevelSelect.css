@@ -1,0 +1,138 @@
+.level-select-container {
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(135deg, #1a1428 0%, #2d1b3d 50%, #1a1428 100%);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    color: white;
+    overflow-y: auto;
+}
+
+.level-select-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+.level-select-header h2 {
+    flex: 1;
+    text-align: center;
+    font-family: var(--font-title);
+    font-size: 2rem;
+    margin: 0;
+    text-shadow: 0 0 10px rgba(196, 181, 253, 0.5);
+}
+
+.btn-back {
+    background: none;
+    border: none;
+    color: var(--lavender);
+    font-size: 1.2rem;
+    cursor: pointer;
+    font-family: var(--font-title);
+    padding: 0.5rem 1rem;
+    transition: transform 0.2s;
+    position: absolute;
+    left: 0;
+}
+
+.btn-back:hover {
+    transform: translateX(-5px);
+    color: white;
+}
+
+.levels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1.5rem;
+    padding-bottom: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.level-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    aspect-ratio: 1;
+    position: relative;
+    overflow: hidden;
+}
+
+.level-card.unlocked:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    border-color: var(--accent-color);
+}
+
+.level-card.current {
+    border: 2px solid var(--accent-color);
+    box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
+    background: rgba(167, 139, 250, 0.1);
+}
+
+.level-card.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.level-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    font-family: var(--font-title);
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #fff, var(--lavender));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.level-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.level-title {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.lock-icon {
+    font-size: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.check-icon {
+    color: #4ade80;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+@media (max-width: 480px) {
+    .levels-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .level-card {
+        padding: 1rem;
+    }
+
+    .level-number {
+        font-size: 2rem;
+    }
+}

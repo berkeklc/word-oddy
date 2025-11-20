@@ -1,0 +1,218 @@
+.level-complete-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 20, 40, 0.97);
+    backdrop-filter: blur(15px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    animation: overlayFadeIn 0.4s ease;
+}
+
+.level-complete-card {
+    width: 90%;
+    max-width: 450px;
+    background: linear-gradient(135deg, rgba(76, 59, 92, 0.95), rgba(61, 50, 80, 0.95));
+    border-radius: 24px;
+    border: 3px solid var(--lavender);
+    padding: 3rem 2rem;
+    text-align: center;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        0 0 100px rgba(167, 139, 250, 0.3);
+    animation: cardSlideUp 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Big celebration icon */
+.complete-icon {
+    font-size: 7rem;
+    margin-bottom: 1.5rem;
+    animation: iconBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    filter: drop-shadow(0 10px 30px rgba(196, 181, 253, 0.5));
+}
+
+/* Title */
+.complete-title {
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--lavender), var(--mint));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+    animation: titleGlow 2s ease-in-out infinite;
+}
+
+/* Stats */
+.complete-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: rgba(26, 20, 40, 0.7);
+    border-radius: 16px;
+    border: 2px solid rgba(196, 181, 253, 0.2);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stat-value {
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--lavender);
+    animation: countUp 0.6s ease;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Rank badge */
+.rank-badge {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    background: linear-gradient(135deg, var(--success), var(--mint));
+    border-radius: 50px;
+    font-family: var(--font-title);
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #1a1428;
+    margin: 1.5rem 0;
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    animation: badgePop 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.3s backwards;
+}
+
+/* Single big button */
+.btn-next {
+    width: 100%;
+    padding: 1.25rem 2rem;
+    background: linear-gradient(135deg, var(--accent-color), var(--lavender));
+    border: none;
+    border-radius: 50px;
+    color: white;
+    font-family: var(--font-title);
+    font-size: 1.3rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 8px 30px rgba(167, 139, 250, 0.5);
+    margin-top: 1rem;
+}
+
+.btn-next:active {
+    transform: scale(0.98);
+}
+
+/* Remove replay button */
+.btn-replay {
+    display: none;
+}
+
+/* Animations */
+@keyframes overlayFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes cardSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes iconBounce {
+    0% {
+        transform: translateY(30px) scale(0.5);
+        opacity: 0;
+    }
+
+    50% {
+        transform: translateY(-10px) scale(1.1);
+    }
+
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes titleGlow {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 0 20px rgba(196, 181, 253, 0.5));
+    }
+
+    50% {
+        filter: drop-shadow(0 0 40px rgba(196, 181, 253, 0.8));
+    }
+}
+
+@keyframes countUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes badgePop {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 400px) {
+    .complete-icon {
+        font-size: 5rem;
+    }
+
+    .complete-title {
+        font-size: 2rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+    }
+
+    .complete-stats {
+        gap: 1.5rem;
+    }
+}

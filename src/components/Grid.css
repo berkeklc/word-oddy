@@ -1,0 +1,214 @@
+.grid-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    padding-bottom: 280px;
+    overflow: hidden;
+    gap: 1rem;
+}
+
+/* Simple Progress */
+.progress-header {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(61, 50, 80, 0.8);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.level-title {
+    font-family: var(--font-title);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--lavender);
+    margin-bottom: 0.5rem;
+}
+
+.progress-counter {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+/* Hide trail */
+.word-trail {
+    display: none;
+}
+
+/* MAIN GAME AREA - FOCUS */
+.word-input-area {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    padding: 2rem 1rem;
+    background: rgba(61, 50, 80, 0.9);
+    border-radius: 20px;
+    border: 3px solid var(--lavender);
+    animation: fadeIn 0.4s ease;
+}
+
+/* Word transition animations */
+.word-input-area.fade-out {
+    animation: fadeOut 0.3s ease forwards;
+}
+
+.word-input-area.fade-in {
+    animation: fadeIn 0.4s ease;
+}
+
+/* BIG CLUE */
+.clue-text {
+    font-family: var(--font-body);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-align: center;
+    line-height: 1.4;
+}
+
+/* CLEAR LETTER BOXES */
+.letter-boxes {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.letter-box {
+    width: 60px;
+    height: 70px;
+    background: rgba(26, 20, 40, 0.8);
+    border: 4px solid #ffffff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #ffffff;
+    text-transform: uppercase;
+}
+
+.letter-box.filled {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    border-color: #ffffff;
+    animation: letterPop 0.3s ease;
+}
+
+/* Wrong animation */
+.letter-boxes.shake {
+    animation: errorShake 0.5s ease;
+}
+
+.letter-boxes.shake .letter-box {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    border-color: #ffffff;
+}
+
+/* Completion */
+.completion-message {
+    text-align: center;
+    animation: celebrate 0.6s ease;
+}
+
+.completion-icon {
+    font-size: 6rem;
+    margin-bottom: 1rem;
+}
+
+.completion-text {
+    font-family: var(--font-title);
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--success);
+}
+
+/* Hide cleanse hint */
+.cleanse-hint-banner {
+    display: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+}
+
+@keyframes letterPop {
+    0% {
+        transform: scale(0.8);
+    }
+
+    50% {
+        transform: scale(1.15);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes errorShake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-15px);
+    }
+
+    75% {
+        transform: translateX(15px);
+    }
+}
+
+@keyframes celebrate {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@media (max-width: 400px) {
+    .clue-text {
+        font-size: 1.5rem;
+    }
+
+    .letter-box {
+        width: 52px;
+        height: 62px;
+        font-size: 2.2rem;
+        border-width: 3px;
+    }
+}

@@ -1,0 +1,93 @@
+.floating-letters-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 260px;
+    z-index: 5;
+    background: linear-gradient(180deg, transparent, rgba(26, 20, 40, 0.98) 20%);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.floating-letters-orbit {
+    position: relative;
+    width: 260px;
+    height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* CLEAR LETTERS */
+.floating-letter {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background: rgba(76, 59, 92, 0.9);
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    color: #ffffff;
+    font-family: var(--font-title);
+    font-weight: 800;
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+
+    animation: floatOrbit var(--float-duration, 4s) ease-in-out infinite;
+    animation-delay: var(--float-delay, 0s);
+    transform: translate(var(--float-x, 0), var(--float-y, 0));
+
+    transition: all 0.15s ease;
+}
+
+.floating-letter:active,
+.floating-letter.pressed {
+    background: linear-gradient(135deg, #a78bfa, #c4b5fd);
+    transform: translate(var(--float-x, 0), var(--float-y, 0)) scale(1.3);
+    box-shadow: 0 6px 25px rgba(167, 139, 250, 0.8);
+    animation: none;
+    z-index: 10;
+}
+
+/* CLEAR BACKSPACE */
+.floating-backspace {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background: rgba(239, 68, 68, 0.3);
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    color: #ffffff;
+    font-size: 1.6rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    z-index: 8;
+}
+
+.floating-backspace:active {
+    background: #ef4444;
+    transform: scale(1.2);
+}
+
+@keyframes floatOrbit {
+
+    0%,
+    100% {
+        transform: translate(var(--float-x, 0), var(--float-y, 0));
+    }
+
+    50% {
+        transform: translate(calc(var(--float-x, 0) * 0.9),
+                calc(var(--float-y, 0) * 1.1));
+    }
+}
