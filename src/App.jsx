@@ -18,9 +18,10 @@ import { gameProgressService } from './services/gameProgressService'
 import './App.css'
 
 function App() {
-    const { user, profile, loading: authLoading } = useAuth();
+    const { user, profile, loading: authLoading, getUserId, isAnonymous } = useAuth();
     const [isSoundOn, setIsSoundOn] = useState(true);
-    const [gameState, setGameState] = useState('auth'); // auth, menu, tutorial, story, playing, complete, level-select, profile
+    const [gameState, setGameState] = useState('menu'); // menu, tutorial, story, playing, complete, level-select, profile
+    const [showAuthModal, setShowAuthModal] = useState(false);
     const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
     const [score, setScore] = useState(0);
     const [combo, setCombo] = useState(0);
@@ -45,31 +46,31 @@ function App() {
         return saved ? JSON.parse(saved) : { gamesPlayed: 0, totalWords: 0 };
     });
 
-    // Load progress from Supabase when user logs in
+    // Load progress from Supabase when user logs in (not for anonymous users)
     useEffect(() => {
-        if (user && !progressLoaded) {
+        if (user && !progressLoaded && !isAnonymous) {
             loadProgressFromSupabase();
+        } else if (isAnonymous && !progressLoaded) {
+            // For anonymous users, just mark as loaded
+            setProgressLoaded(true);
         }
-    }, [user]);
+    }, [user, isAnonymous]);
 
     // Save progress to both localStorage and Supabase
     useEffect(() => {
         localStorage.setItem('wordOdysseyStats', JSON.stringify(stats));
-        if (user) {
+        // Only save to Supabase if user is logged in (not anonymous)
+        if (user && !isAnonymous) {
             saveProgressToSupabase();
         }
-    }, [stats, highScore, maxLevelReached, showTutorial, inventory]);
+    }, [stats, highScore, maxLevelReached, showTutorial, inventory, user, isAnonymous]);
 
-    // Handle auth state changes
+    // Handle auth state changes - close modal when logged in
     useEffect(() => {
-        if (!authLoading) {
-            if (user && gameState === 'auth') {
-                setGameState('menu');
-            } else if (!user && gameState === 'auth') {
-                // Stay on auth screen
-            }
+        if (!authLoading && user && !isAnonymous) {
+            setShowAuthModal(false);
         }
-    }, [user, authLoading]);
+    }, [user, authLoading, isAnonymous]);
 
     const loadProgressFromSupabase = async () => {
         try {
@@ -108,8 +109,12 @@ function App() {
         }
     };
 
-    const handleSkipAuth = () => {
-        setGameState('menu');
+    const handleAuthModalClose = () => {
+        setShowAuthModal(false);
+    };
+
+    const handleOpenAuth = () => {
+        setShowAuthModal(true);
     };
 
     const currentLevel = levels[currentLevelIndex];
@@ -238,8 +243,8 @@ function App() {
         <div className="game-container">
             <ParticleSystem />
 
-            {gameState === 'auth' && !user && (
-                <Auth onSkip={handleSkipAuth} />
+            {showAuthModal && (
+                <Auth onClose={handleAuthModalClose} />
             )}
 
             <SettingsModal
@@ -256,6 +261,7 @@ function App() {
                     onLevels={() => setGameState('level-select')}
                     onProfile={() => setGameState('profile')}
                     onSettings={() => setShowSettings(true)}
+                    onAuth={handleOpenAuth}
                 />
             )}
 
@@ -272,6 +278,7 @@ function App() {
                 <Profile
                     stats={{ ...stats, highScore, maxLevel: maxLevelReached }}
                     onBack={() => setGameState('menu')}
+                    onOpenAuth={handleOpenAuth}
                 />
             )}
 

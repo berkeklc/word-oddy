@@ -1,7 +1,10 @@
 import React from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import './Profile.css';
 
-const Profile = ({ stats, onBack }) => {
+const Profile = ({ stats, onBack, onOpenAuth }) => {
+    const { isAnonymous, profile, user } = useAuth();
+
     return (
         <div className="profile-container">
             <header className="profile-header">
@@ -10,11 +13,25 @@ const Profile = ({ stats, onBack }) => {
             </header>
 
             <div className="profile-content">
+                {isAnonymous && (
+                    <div className="anon-warning">
+                        <div className="warning-icon">⚠️</div>
+                        <h3>Playing as Anonymous Wanderer</h3>
+                        <p>Your progress is only saved locally. Create an account to save your journey across devices!</p>
+                        <button className="btn-create-account" onClick={onOpenAuth}>
+                            ✨ Create Account & Save Progress
+                        </button>
+                    </div>
+                )}
+
                 <div className="profile-avatar">
                     <div className="avatar-circle">
-                        👤
+                        {isAnonymous ? '🎭' : '👤'}
                     </div>
-                    <h3>Novice Explorer</h3>
+                    <h3>{isAnonymous ? 'Anonymous Wanderer' : (profile?.username || 'Explorer')}</h3>
+                    {!isAnonymous && user?.email && (
+                        <p className="user-email">{user.email}</p>
+                    )}
                 </div>
 
                 <div className="stats-grid">

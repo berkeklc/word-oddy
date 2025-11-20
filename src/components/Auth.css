@@ -4,112 +4,356 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(10, 10, 20, 0.95);
+    background: radial-gradient(ellipse at center, rgba(15, 10, 30, 0.95), rgba(5, 5, 15, 0.98));
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 2000;
-    backdrop-filter: blur(10px);
+    backdrop-filter: blur(15px);
+    animation: fadeIn 0.5s ease;
 }
 
-.auth-box {
-    background: linear-gradient(145deg, #1a1a2e, #16213e);
-    padding: 2.5rem;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 400px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5),
-        0 0 20px rgba(76, 201, 240, 0.1);
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Scroll Background - looks like an ancient scroll */
+.scroll-background {
+    position: relative;
+    max-width: 480px;
+    width: 92%;
+    background: linear-gradient(165deg,
+            rgba(40, 30, 60, 0.95) 0%,
+            rgba(25, 20, 45, 0.97) 50%,
+            rgba(15, 10, 35, 0.95) 100%);
+    border-radius: 24px;
+    padding: 3px;
+    box-shadow:
+        0 0 60px rgba(76, 201, 240, 0.15),
+        0 20px 60px rgba(0, 0, 0, 0.6),
+        inset 0 1px 2px rgba(255, 255, 255, 0.1);
+    animation: scrollAppear 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes scrollAppear {
+    from {
+        opacity: 0;
+        transform: scale(0.8) translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.scroll-content {
+    position: relative;
+    background: linear-gradient(180deg,
+            rgba(20, 15, 40, 0.9) 0%,
+            rgba(15, 10, 30, 0.95) 100%);
+    border-radius: 22px;
+    padding: 2.5rem 2rem;
+    overflow: hidden;
+}
+
+/* Background pattern */
+.scroll-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        radial-gradient(circle at 20% 30%, rgba(76, 201, 240, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(138, 73, 244, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+/* Close Button */
+.auth-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
-    animation: slideUp 0.5s ease-out;
+    color: #b8c1ec;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
 }
 
-.auth-box h2 {
-    text-align: center;
+.auth-close-btn:hover {
+    background: rgba(239, 71, 111, 0.2);
+    border-color: #ef476f;
+    color: #ef476f;
+    transform: rotate(90deg);
+}
+
+/* Header */
+.scroll-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
     margin-bottom: 0.5rem;
-    font-family: 'Cinzel', serif;
-    color: #4cc9f0;
-    font-size: 2rem;
 }
 
-.auth-subtitle {
+.rune-decoration {
+    color: #4cc9f0;
+    font-size: 1.5rem;
+    animation: runeGlow 2s ease-in-out infinite;
+}
+
+@keyframes runeGlow {
+
+    0%,
+    100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+}
+
+.scroll-title {
+    font-family: 'Cinzel', serif;
+    font-size: 2rem;
+    color: #4cc9f0;
+    margin: 0;
+    text-shadow: 0 0 20px rgba(76, 201, 240, 0.5);
+    letter-spacing: 1px;
+}
+
+.scroll-subtitle {
     text-align: center;
     color: #8d99ae;
-    margin-bottom: 2rem;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    margin: 0 0 2rem;
+    line-height: 1.5;
+    font-style: italic;
+}
+
+/* Form */
+.scroll-form {
+    position: relative;
+    z-index: 2;
 }
 
 .form-group {
     margin-bottom: 1.5rem;
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
+.mystical-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
     color: #b8c1ec;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    font-weight: 500;
 }
 
-.form-group input {
+.label-icon {
+    font-size: 1.1rem;
+}
+
+.mystical-input {
     width: 100%;
-    padding: 12px;
-    border-radius: 10px;
-    border: 2px solid #2a2a40;
-    background: #0f0f1a;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 2px solid rgba(76, 201, 240, 0.2);
+    background: rgba(15, 10, 30, 0.6);
     color: white;
     font-size: 1rem;
     transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
 }
 
-.form-group input:focus {
+.mystical-input::placeholder {
+    color: rgba(184, 193, 236, 0.4);
+}
+
+.mystical-input:focus {
     border-color: #4cc9f0;
     outline: none;
-    box-shadow: 0 0 10px rgba(76, 201, 240, 0.2);
+    box-shadow:
+        0 0 20px rgba(76, 201, 240, 0.3),
+        inset 0 1px 3px rgba(0, 0, 0, 0.3);
+    background: rgba(15, 10, 30, 0.8);
 }
 
-.auth-btn {
+/* Mystical Button */
+.mystical-btn {
     width: 100%;
-    padding: 14px;
-    border-radius: 10px;
+    padding: 16px;
+    border-radius: 12px;
     border: none;
-    background: linear-gradient(45deg, #4cc9f0, #4361ee);
+    background: linear-gradient(135deg, #4cc9f0 0%, #4361ee 100%);
     color: white;
     font-weight: bold;
     font-size: 1.1rem;
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.3s ease;
     margin-top: 1rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(67, 97, 238, 0.4);
 }
 
-.auth-btn:hover {
+.mystical-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.mystical-btn:hover::before {
+    left: 100%;
+}
+
+.mystical-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+    box-shadow: 0 6px 30px rgba(67, 97, 238, 0.6);
 }
 
-.auth-btn:disabled {
+.mystical-btn:disabled {
     opacity: 0.7;
     cursor: not-allowed;
     transform: none;
 }
 
+.btn-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.spinner {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Messages */
+.auth-success {
+    background: linear-gradient(135deg, rgba(76, 201, 240, 0.2), rgba(67, 97, 238, 0.2));
+    border: 1px solid #4cc9f0;
+    color: #4cc9f0;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    text-align: center;
+    animation: successPulse 0.6s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+@keyframes successPulse {
+    0% {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.success-icon {
+    font-size: 1.2rem;
+    animation: sparkle 1s ease-in-out infinite;
+}
+
+@keyframes sparkle {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(1.2);
+    }
+}
+
 .auth-error {
-    background: rgba(239, 71, 111, 0.2);
-    border: 1px solid #ef476f;
-    color: #ef476f;
-    padding: 10px;
-    border-radius: 8px;
+    background: rgba(239, 71, 111, 0.15);
+    border: 1px solid rgba(239, 71, 111, 0.5);
+    color: #ff6b9d;
+    padding: 12px;
+    border-radius: 10px;
     margin-bottom: 1.5rem;
     font-size: 0.9rem;
     text-align: center;
+    animation: shake 0.4s ease;
 }
 
-.auth-footer {
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+/* Footer */
+.scroll-footer {
     margin-top: 2rem;
     text-align: center;
 }
 
-.link-btn {
+.switch-mode-btn {
     background: none;
     border: none;
     color: #4cc9f0;
@@ -117,62 +361,62 @@
     font-size: 0.9rem;
     text-decoration: underline;
     opacity: 0.8;
-    transition: opacity 0.2s;
+    transition: all 0.3s ease;
+    padding: 0.5rem;
 }
 
-.link-btn:hover {
+.switch-mode-btn:hover {
     opacity: 1;
+    color: #6edaff;
+    text-shadow: 0 0 10px rgba(76, 201, 240, 0.5);
 }
 
-.divider {
-    margin: 1.5rem 0;
-    color: #4a4a60;
-    font-size: 0.8rem;
-    position: relative;
-}
-
-.divider::before,
-.divider::after {
-    content: '';
+/* Scroll Ornaments */
+.scroll-ornament {
     position: absolute;
-    top: 50%;
-    width: 40%;
-    height: 1px;
-    background: #2a2a40;
+    font-size: 1.5rem;
+    color: rgba(76, 201, 240, 0.3);
+    font-family: monospace;
+    pointer-events: none;
+    z-index: 1;
 }
 
-.divider::before {
-    left: 0;
+.scroll-ornament-top-left {
+    top: 1rem;
+    left: 1rem;
 }
 
-.divider::after {
-    right: 0;
+.scroll-ornament-top-right {
+    top: 1rem;
+    right: 1rem;
 }
 
-.guest-btn {
-    background: transparent;
-    border: 2px solid #4a4a60;
-    color: #8d99ae;
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-size: 0.9rem;
+.scroll-ornament-bottom-left {
+    bottom: 1rem;
+    left: 1rem;
 }
 
-.guest-btn:hover {
-    border-color: #b8c1ec;
-    color: #b8c1ec;
+.scroll-ornament-bottom-right {
+    bottom: 1rem;
+    right: 1rem;
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .scroll-content {
+        padding: 2rem 1.5rem;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .scroll-title {
+        font-size: 1.6rem;
+    }
+
+    .scroll-subtitle {
+        font-size: 0.85rem;
+    }
+
+    .mystical-input {
+        font-size: 16px;
+        /* Prevents zoom on iOS */
     }
 }

@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import './Auth.css';
 
-const Auth = ({ onSkip }) => {
+const Auth = ({ onClose }) => {
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(false);
     const { signIn, signUp } = useAuth();
 
     const handleSubmit = async (e) => {
@@ -20,14 +21,22 @@ const Auth = ({ onSkip }) => {
             if (isLogin) {
                 const { error } = await signIn(email, password);
                 if (error) throw error;
+                setSuccess(true);
+                setTimeout(() => {
+                    onClose();
+                }, 1500);
             } else {
                 if (username.length < 3) {
-                    throw new Error('Username must be at least 3 characters long');
+                    throw new Error('Traveler name must be at least 3 runes long');
                 }
                 const { error } = await signUp(email, password, username);
                 if (error) throw error;
-                alert('Registration successful! Please check your email to confirm your account.');
-                setIsLogin(true);
+                setSuccess(true);
+                setTimeout(() => {
+                    setIsLogin(true);
+                    setSuccess(false);
+                    setError('A mystical scroll has been sent to your realm. Confirm to unlock your account!');
+                }, 2000);
             }
         } catch (err) {
             setError(err.message);
@@ -38,65 +47,129 @@ const Auth = ({ onSkip }) => {
 
     return (
         <div className="auth-container">
-            <div className="auth-box">
-                <h2>{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
-                <p className="auth-subtitle">
-                    {isLogin ? 'Sign in to save your progress' : 'Join the adventure'}
-                </p>
+            <div className="scroll-background">
+                <div className="scroll-content">
+                    {/* Close button */}
+                    <button className="auth-close-btn" onClick={onClose} aria-label="Close">
+                        ✕
+                    </button>
 
-                {error && <div className="auth-error">{error}</div>}
+                    {/* Mystical Header */}
+                    <div className="scroll-header">
+                        <div className="rune-decoration">✦</div>
+                        <h2 className="scroll-title">
+                            {isLogin ? 'Return, Traveler' : 'Join the Quest'}
+                        </h2>
+                        <div className="rune-decoration">✦</div>
+                    </div>
 
-                <form onSubmit={handleSubmit}>
-                    {!isLogin && (
-                        <div className="form-group">
-                            <label>Username</label>
-                            <input
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                placeholder="Choose a nickname"
-                                required
-                            />
+                    <p className="scroll-subtitle">
+                        {isLogin
+                            ? 'Your journey awaits, restore your progress from the ethereal realm'
+                            : 'Inscribe your name in the Book of Legends'}
+                    </p>
+
+                    {/* Success Message */}
+                    {success && (
+                        <div className="auth-success">
+                            <span className="success-icon">✨</span>
+                            {isLogin ? 'Welcome back, brave soul!' : 'Your legend begins...'}
                         </div>
                     )}
 
-                    <div className="form-group">
-                        <label>Email</label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="Enter your email"
-                            required
-                        />
+                    {/* Error Message */}
+                    {error && <div className="auth-error">⚠️ {error}</div>}
+
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="scroll-form">
+                        {!isLogin && (
+                            <div className="form-group">
+                                <label className="mystical-label">
+                                    <span className="label-icon">👤</span>
+                                    Traveler's Name
+                                </label>
+                                <input
+                                    type="text"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="Enter your legendary name..."
+                                    className="mystical-input"
+                                    required
+                                />
+                            </div>
+                        )}
+
+                        <div className="form-group">
+                            <label className="mystical-label">
+                                <span className="label-icon">📜</span>
+                                Ethereal Scroll
+                            </label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="your.spell@realm.com"
+                                className="mystical-input"
+                                required
+                            />
+                        </div>
+
+                        <div className="form-group">
+                            <label className="mystical-label">
+                                <span className="label-icon">🔮</span>
+                                Secret Incantation
+                            </label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="••••••••"
+                                className="mystical-input"
+                                required
+                            />
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="mystical-btn"
+                            disabled={loading || success}
+                        >
+                            {loading ? (
+                                <span className="btn-loading">
+                                    <span className="spinner">⚡</span>
+                                    Casting spell...
+                                </span>
+                            ) : success ? (
+                                <span>✓ Enchanted!</span>
+                            ) : (
+                                <span>
+                                    {isLogin ? '⚔️ Enter the Realm' : '✨ Begin Journey'}
+                                </span>
+                            )}
+                        </button>
+                    </form>
+
+                    {/* Footer */}
+                    <div className="scroll-footer">
+                        <button
+                            className="switch-mode-btn"
+                            onClick={() => {
+                                setIsLogin(!isLogin);
+                                setError(null);
+                                setSuccess(false);
+                            }}
+                        >
+                            {isLogin
+                                ? "New to the realm? Create your legend"
+                                : "Already a legend? Return here"}
+                        </button>
                     </div>
 
-                    <div className="form-group">
-                        <label>Password</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Enter password"
-                            required
-                        />
-                    </div>
-
-                    <button type="submit" className="auth-btn" disabled={loading}>
-                        {loading ? 'Loading...' : (isLogin ? 'Sign In' : 'Sign Up')}
-                    </button>
-                </form>
-
-                <div className="auth-footer">
-                    <button className="link-btn" onClick={() => setIsLogin(!isLogin)}>
-                        {isLogin ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
-                    </button>
-
-                    <div className="divider">or</div>
-
-                    <button className="guest-btn" onClick={onSkip}>
-                        Play as Guest
-                    </button>
+                    {/* Decorative elements */}
+                    <div className="scroll-ornament scroll-ornament-top-left">╔</div>
+                    <div className="scroll-ornament scroll-ornament-top-right">╗</div>
+                    <div className="scroll-ornament scroll-ornament-bottom-left">╚</div>
+                    <div className="scroll-ornament scroll-ornament-bottom-right">╝</div>
                 </div>
             </div>
         </div>
