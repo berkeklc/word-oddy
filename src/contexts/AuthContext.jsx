@@ -47,6 +47,13 @@ export const AuthProvider = ({ children }) => {
                 setIsAnonymous(true);
                 setLoading(false);
             }
+        }).catch((error) => {
+            console.error('Error getting session:', error);
+            // Create anonymous user on error
+            const anonId = getAnonymousUserId();
+            setAnonymousId(anonId);
+            setIsAnonymous(true);
+            setLoading(false);
         });
 
         // Listen for changes on auth state (logged in, signed out, etc.)
@@ -61,12 +68,15 @@ export const AuthProvider = ({ children }) => {
                 const anonId = getAnonymousUserId();
                 setAnonymousId(anonId);
                 setIsAnonymous(true);
+                setLoading(false);
             }
-            setLoading(false);
         });
 
-        return () => subscription.unsubscribe();
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
+
 
     const fetchProfile = async (userId) => {
         try {
@@ -78,11 +88,15 @@ export const AuthProvider = ({ children }) => {
 
             if (error) {
                 console.warn('Error fetching profile:', error);
+                // Even if profile fetch fails, continue loading
+                setLoading(false);
             } else {
                 setProfile(data);
+                setLoading(false);
             }
         } catch (error) {
             console.error('Error in fetchProfile:', error);
+            setLoading(false);
         }
     };
 
@@ -97,9 +111,8 @@ export const AuthProvider = ({ children }) => {
             },
         });
 
-        // If signup successful and there's anonymous data, we can migrate it later
+        // If there's anonymous data, mark for migration
         if (data.user && !error && anonymousId) {
-            // Store the anonymous ID to migrate progress later
             localStorage.setItem('wordOdysseyMigrationPending', anonymousId);
         }
 

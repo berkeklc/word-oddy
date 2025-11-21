@@ -21,14 +21,16 @@ export const gameProgressService = {
             .from('game_progress')
             .upsert({
                 user_id: userId,
-                high_score: progress.highScore,
-                max_level: progress.maxLevel,
-                total_words: progress.totalWords,
-                games_played: progress.gamesPlayed,
-                tutorial_complete: progress.tutorialComplete,
-                inventory: progress.inventory,
+                high_score: progress.highScore || 0,
+                max_level: progress.maxLevel || 0,
+                total_words: progress.totalWords || 0,
+                games_played: progress.gamesPlayed || 0,
+                tutorial_complete: progress.tutorialComplete || false,
+                inventory: progress.inventory || { clear: 3 },
                 max_combo: progress.maxCombo || 0,
                 current_combo: progress.currentCombo || 0,
+                creative_high_score: progress.creativeHighScore || 0,
+                creative_max_level: progress.creativeMaxLevel || 1,
                 updated_at: new Date().toISOString()
             })
             .select();

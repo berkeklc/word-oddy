@@ -30,10 +30,13 @@ const Auth = ({ onClose }) => {
                     throw new Error('Traveler name must be at least 3 runes long');
                 }
 
-                // Basic email validation to prevent "invalid email" errors
-                if (!email.includes('@') || !email.includes('.')) {
-                    throw new Error('Please enter a valid magical address (email)');
+
+                // More flexible email validation
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    throw new Error('Please enter a valid email address');
                 }
+
 
                 // Sign up
                 const { data, error } = await signUp(email, password, username);
@@ -42,33 +45,34 @@ const Auth = ({ onClose }) => {
                 setSuccess(true);
 
                 // Auto-login logic:
-                // If we got a user but no session, it usually means email confirmation is on.
-                // But user wants to bypass this. We can't bypass Supabase security, 
-                // BUT if the project has "Enable email confirmations" OFF, we get a session.
-                // If it's ON, we can't auto-login without the user clicking the link.
-                // However, if the user just wants to "play" without verifying, we can pretend they are logged in locally 
-                // OR we can try to sign in immediately (which will fail if email not confirmed).
+                // The new approach: with email confirmation disabled, we should get a session immediately
 
-                // Attempt immediate sign-in just in case
-                if (!data.session) {
-                    const { data: signInData, error: signInError } = await signIn(email, password);
-                    if (!signInError && signInData.session) {
-                        // Success!
-                        setTimeout(() => onClose(), 1500);
-                        return;
-                    }
-                } else {
-                    setTimeout(() => onClose(), 1500);
+                if (data.session) {
+                    // Got session immediately - email confirmation is disabled
+                    setSuccess(true);
+                    setTimeout(() => onClose(), 1000);
                     return;
                 }
 
-                // If we are here, we couldn't get a session. 
-                // We'll show a message but NOT block them from trying to play (though they won't be authenticated).
+                // If no session, try to sign in
+                try {
+                    const { data: signInData, error: signInError } = await signIn(email, password);
+                    if (!signInError && signInData.session) {
+                        // Success!
+                        setSuccess(true);
+                        setTimeout(() => onClose(), 1000);
+                        return;
+                    }
+                } catch (signInErr) {
+                    console.error('Auto-login error:', signInErr);
+                }
+
+                // If we're here, email confirmation might be required
+                setSuccess(true);
                 setTimeout(() => {
-                    setIsLogin(true);
+                    setError('Account created! Please check your email to confirm.');
                     setSuccess(false);
-                    setError('Please check your scroll (email) to confirm your identity!');
-                }, 2000);
+                }, 1500);
             }
         } catch (err) {
             setError(err.message);

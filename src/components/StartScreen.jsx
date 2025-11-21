@@ -1,9 +1,14 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import MiniLeaderboard from './MiniLeaderboard';
 import './StartScreen.css';
 
-const StartScreen = ({ onStart, onCreative, onLevels, onProfile, onSettings, onAuth }) => {
-    const { isAnonymous, profile } = useAuth();
+const StartScreen = ({ onStart, onCreative, onLevels, onProfile, onLeaderboard, onSettings, onAuth }) => {
+    const { isAnonymous, profile, signOut } = useAuth();
+
+    const handleLogout = async () => {
+        await signOut();
+    };
 
     return (
         <div className="start-screen">
@@ -12,9 +17,33 @@ const StartScreen = ({ onStart, onCreative, onLevels, onProfile, onSettings, onA
             </button>
 
             {/* Login/Account button in top right */}
-            <button className="btn-account-corner" onClick={onAuth}>
-                {isAnonymous ? '🔓 Login' : `👤 ${profile?.username || 'Account'}`}
-            </button>
+            {isAnonymous ? (
+                <button className="btn-account-corner" onClick={onAuth}>
+                    🔓 Login
+                </button>
+            ) : (
+                <>
+                    <button
+                        className="btn-account-corner"
+                        onClick={onAuth}
+                        style={{ right: '130px' }}
+                    >
+                        👤 {profile?.username || 'Account'}
+                    </button>
+                    <button
+                        className="btn-account-corner"
+                        onClick={handleLogout}
+                        style={{
+                            right: '15px',
+                            background: 'rgba(220, 53, 69, 0.2)',
+                            borderColor: '#dc3545'
+                        }}
+                        title="Logout"
+                    >
+                        🚪
+                    </button>
+                </>
+            )}
 
             <div className="logo-container">
                 <h1 className="game-title">Word <br /><span className="highlight">Odyssey</span></h1>
@@ -42,6 +71,8 @@ const StartScreen = ({ onStart, onCreative, onLevels, onProfile, onSettings, onA
                     </button>
                 </div>
             </div>
+
+            <MiniLeaderboard onViewFull={onLeaderboard} />
 
             <div className="footer-decoration">
                 <div className="lantern-icon">🏮</div>
