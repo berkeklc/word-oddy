@@ -31,5 +31,13 @@ export const powerUps = [
         cost: 80,
         icon: '📜',
         uses: 0
+    },
+    {
+        id: 'oracle',
+        name: 'Word Oracle',
+        description: 'Ignites the grid revealing all word positions for 1 second! Auto-activates at 7 combo!',
+        cost: 500,
+        icon: '⚡',
+        uses: 0
     }
 ];
