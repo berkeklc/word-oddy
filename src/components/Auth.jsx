@@ -29,21 +29,46 @@ const Auth = ({ onClose }) => {
                 if (username.length < 3) {
                     throw new Error('Traveler name must be at least 3 runes long');
                 }
+
+                // Basic email validation to prevent "invalid email" errors
+                if (!email.includes('@') || !email.includes('.')) {
+                    throw new Error('Please enter a valid magical address (email)');
+                }
+
                 // Sign up
                 const { data, error } = await signUp(email, password, username);
                 if (error) throw error;
 
                 setSuccess(true);
 
-                // Since we want to skip verification, we assume the user is logged in if data.user exists.
-                // However, Supabase default is to require email verification.
-                // If you disabled it in Supabase dashboard, data.session will be present.
-                // If not, we can't force it from client side.
-                // Assuming user disabled it in dashboard as requested.
+                // Auto-login logic:
+                // If we got a user but no session, it usually means email confirmation is on.
+                // But user wants to bypass this. We can't bypass Supabase security, 
+                // BUT if the project has "Enable email confirmations" OFF, we get a session.
+                // If it's ON, we can't auto-login without the user clicking the link.
+                // However, if the user just wants to "play" without verifying, we can pretend they are logged in locally 
+                // OR we can try to sign in immediately (which will fail if email not confirmed).
 
+                // Attempt immediate sign-in just in case
+                if (!data.session) {
+                    const { data: signInData, error: signInError } = await signIn(email, password);
+                    if (!signInError && signInData.session) {
+                        // Success!
+                        setTimeout(() => onClose(), 1500);
+                        return;
+                    }
+                } else {
+                    setTimeout(() => onClose(), 1500);
+                    return;
+                }
+
+                // If we are here, we couldn't get a session. 
+                // We'll show a message but NOT block them from trying to play (though they won't be authenticated).
                 setTimeout(() => {
-                    onClose();
-                }, 1500);
+                    setIsLogin(true);
+                    setSuccess(false);
+                    setError('Please check your scroll (email) to confirm your identity!');
+                }, 2000);
             }
         } catch (err) {
             setError(err.message);
