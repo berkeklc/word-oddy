@@ -5,78 +5,89 @@ const AuthContext = createContext({});
 
 export const useAuth = () => useContext(AuthContext);
 
-// Generate a unique GUID for anonymous users
-const generateGUID = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        const r = Math.random() * 16 | 0;
-        const v = c === 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-};
-
-// Get or create anonymous user ID
-const getAnonymousUserId = () => {
-    let anonId = localStorage.getItem('wordOdysseyAnonUserId');
-    if (!anonId) {
-        anonId = generateGUID();
-        localStorage.setItem('wordOdysseyAnonUserId', anonId);
-    }
-    return anonId;
-};
-
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
     const [profile, setProfile] = useState(null);
-    const [anonymousId, setAnonymousId] = useState(null);
     const [isAnonymous, setIsAnonymous] = useState(false);
 
     useEffect(() => {
+        console.log('AuthContext: Initializing...');
+        // Safety timeout to prevent infinite loading
+        const safetyTimeout = setTimeout(() => {
+            console.warn('AuthContext: Safety timeout triggered');
+            setLoading(false);
+        }, 5000);
+
         // Check active sessions and sets the user
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        supabase.auth.getSession().then(({ data: { session }, error }) => {
+            if (error) throw error;
+
+            console.log('AuthContext: getSession result', session ? 'Session found' : 'No session');
             setSession(session);
             setUser(session?.user ?? null);
+
             if (session?.user) {
+                console.log('AuthContext: User found, fetching profile...');
                 fetchProfile(session.user.id);
-                setIsAnonymous(false);
+                setIsAnonymous(session.user.is_anonymous);
             } else {
-                // Create anonymous user
-                const anonId = getAnonymousUserId();
-                setAnonymousId(anonId);
-                setIsAnonymous(true);
-                setLoading(false);
+                // No session, sign in anonymously
+                console.log('AuthContext: No session, signing in anonymously...');
+                signInAnonymously();
             }
         }).catch((error) => {
-            console.error('Error getting session:', error);
-            // Create anonymous user on error
-            const anonId = getAnonymousUserId();
-            setAnonymousId(anonId);
-            setIsAnonymous(true);
+            console.error('AuthContext: Error getting session:', error);
+            // If session is invalid/corrupt, clear it and retry anonymous login
+            supabase.auth.signOut().then(() => {
+                console.log('AuthContext: Signed out after error, retrying anonymous login...');
+                signInAnonymously();
+            });
             setLoading(false);
         });
 
         // Listen for changes on auth state (logged in, signed out, etc.)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log('AuthContext: Auth state change:', event, session ? 'Session active' : 'No session');
             setSession(session);
             setUser(session?.user ?? null);
+
             if (session?.user) {
                 await fetchProfile(session.user.id);
-                setIsAnonymous(false);
+                setIsAnonymous(session.user.is_anonymous);
             } else {
                 setProfile(null);
-                const anonId = getAnonymousUserId();
-                setAnonymousId(anonId);
-                setIsAnonymous(true);
-                setLoading(false);
+                // If signed out, sign in anonymously again to maintain a session
+                // Only try to sign in if we are not already loading (to avoid race with initial load)
+                if (!loading && event === 'SIGNED_OUT') {
+                    console.log('AuthContext: User signed out, re-signing in anonymously...');
+                    signInAnonymously();
+                }
             }
+            setLoading(false);
         });
 
         return () => {
             subscription.unsubscribe();
+            clearTimeout(safetyTimeout);
         };
     }, []);
 
+    const signInAnonymously = async () => {
+        try {
+            const { data, error } = await supabase.auth.signInAnonymously();
+            if (error) throw error;
+            console.log('AuthContext: Signed in anonymously success');
+            // Explicitly set loading to false here to ensure app unblocks
+            setLoading(false);
+            return data;
+        } catch (error) {
+            console.error('AuthContext: Error signing in anonymously:', error);
+            // If anonymous sign-in fails, we must stop loading to allow app to render (even if broken)
+            setLoading(false);
+        }
+    };
 
     const fetchProfile = async (userId) => {
         try {
@@ -88,19 +99,18 @@ export const AuthProvider = ({ children }) => {
 
             if (error) {
                 console.warn('Error fetching profile:', error);
-                // Even if profile fetch fails, continue loading
-                setLoading(false);
             } else {
                 setProfile(data);
-                setLoading(false);
             }
         } catch (error) {
             console.error('Error in fetchProfile:', error);
+        } finally {
             setLoading(false);
         }
     };
 
     const signUp = async (email, password, username) => {
+        // For completely new users (not linked)
         const { data, error } = await supabase.auth.signUp({
             email,
             password,
@@ -110,52 +120,64 @@ export const AuthProvider = ({ children }) => {
                 },
             },
         });
-
-        // If there's anonymous data, mark for migration
-        if (data.user && !error && anonymousId) {
-            localStorage.setItem('wordOdysseyMigrationPending', anonymousId);
-        }
-
         return { data, error };
     };
 
     const signIn = async (email, password) => {
         const result = await supabase.auth.signInWithPassword({ email, password });
-
-        // Check if we need to migrate anonymous data
-        const migrationId = localStorage.getItem('wordOdysseyMigrationPending');
-        if (result.data.user && !result.error && migrationId) {
-            // Migration will happen in the game progress service
-            localStorage.removeItem('wordOdysseyMigrationPending');
-        }
-
         return result;
     };
 
     const signOut = async () => {
         const result = await supabase.auth.signOut();
-        // Re-create anonymous user
-        const anonId = generateGUID();
-        localStorage.setItem('wordOdysseyAnonUserId', anonId);
-        setAnonymousId(anonId);
-        setIsAnonymous(true);
         return result;
     };
 
-    // Get the current user ID (either real user or anonymous)
+    // Convert anonymous user to permanent user
+    const linkAccount = async (email, password, username) => {
+        try {
+            // 1. Update the user's auth credentials
+            const { data, error } = await supabase.auth.updateUser({
+                email: email,
+                password: password,
+                data: { username: username }
+            });
+
+            if (error) throw error;
+
+            // 2. Update the profile with the new username
+            if (user) {
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .update({ username: username })
+                    .eq('id', user.id);
+
+                if (profileError) console.warn('Error updating profile username:', profileError);
+
+                // Refresh profile
+                await fetchProfile(user.id);
+            }
+
+            return { data, error: null };
+        } catch (error) {
+            console.error('Error linking account:', error);
+            return { data: null, error };
+        }
+    };
+
     const getUserId = () => {
-        return user?.id || anonymousId;
+        return user?.id;
     };
 
     const value = {
         signUp,
         signIn,
         signOut,
+        linkAccount,
         user,
         profile,
         session,
         loading,
-        anonymousId,
         isAnonymous,
         getUserId
     };

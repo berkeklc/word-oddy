@@ -31,7 +31,7 @@ const getRandomLetter = () => {
 };
 
 const CreativeGame = ({ onBack }) => {
-    const { user, isAnonymous } = useAuth();
+    const { user, isAnonymous, linkAccount } = useAuth();
 
     // Load saved progress from localStorage
     const [gridSize, setGridSize] = useState(() => {
@@ -633,6 +633,15 @@ const CreativeGame = ({ onBack }) => {
         return false;
     };
 
+    // Registration Reminder State
+    const [showRegistrationModal, setShowRegistrationModal] = useState(false);
+    const [regEmail, setRegEmail] = useState('');
+    const [regPassword, setRegPassword] = useState('');
+    const [regUsername, setRegUsername] = useState('');
+    const [regError, setRegError] = useState(null);
+    const [regSuccess, setRegSuccess] = useState(false);
+    // Removed duplicate useAuth call here
+
     const handleLevelUp = () => {
         setIsLevelingUp(true);
         soundManager.playLevelComplete();
@@ -640,10 +649,39 @@ const CreativeGame = ({ onBack }) => {
         setTimeout(() => {
             const newSize = Math.min(gridSize + 1, 10);
             setGridSize(newSize);
-            setLevel(prev => prev + 1);
+            setLevel(prev => {
+                const newLevel = prev + 1;
+                // Check for registration reminder every 3 levels if anonymous
+                if (isAnonymous && newLevel % 3 === 0) {
+                    setShowRegistrationModal(true);
+                }
+                return newLevel;
+            });
             generateGrid(newSize, score);
             setIsLevelingUp(false);
         }, 2000);
+    };
+
+    const handleLinkAccount = async (e) => {
+        e.preventDefault();
+        setRegError(null);
+
+        if (regPassword.length < 6) {
+            setRegError('Password must be at least 6 characters');
+            return;
+        }
+
+        const { error } = await linkAccount(regEmail, regPassword, regUsername);
+        if (error) {
+            setRegError(error.message);
+        } else {
+            setRegSuccess(true);
+            soundManager.playSuccess();
+            setTimeout(() => {
+                setShowRegistrationModal(false);
+                setRegSuccess(false);
+            }, 2000);
+        }
     };
 
     return (
@@ -696,6 +734,59 @@ const CreativeGame = ({ onBack }) => {
                     <div className="level-up-overlay">
                         <div className="level-up-text">Realm Expanded!</div>
                         <div className="level-up-sub">Grid size increased to {Math.min(gridSize + 1, 10)}x{Math.min(gridSize + 1, 10)}</div>
+                    </div>
+                )}
+
+                {/* Registration Reminder Modal */}
+                {showRegistrationModal && (
+                    <div className="modal-overlay">
+                        <div className="modal-content registration-modal">
+                            <h2>🛡️ Save Your Progress?</h2>
+                            <p>You're doing great! Create an account to save your scores and stats forever.</p>
+
+                            {regSuccess ? (
+                                <div className="success-message">
+                                    ✅ Account Saved Successfully!
+                                </div>
+                            ) : (
+                                <form onSubmit={handleLinkAccount}>
+                                    <input
+                                        type="text"
+                                        placeholder="Username"
+                                        value={regUsername}
+                                        onChange={(e) => setRegUsername(e.target.value)}
+                                        required
+                                        className="modal-input"
+                                    />
+                                    <input
+                                        type="email"
+                                        placeholder="Email"
+                                        value={regEmail}
+                                        onChange={(e) => setRegEmail(e.target.value)}
+                                        required
+                                        className="modal-input"
+                                    />
+                                    <input
+                                        type="password"
+                                        placeholder="Password (min 6 chars)"
+                                        value={regPassword}
+                                        onChange={(e) => setRegPassword(e.target.value)}
+                                        required
+                                        className="modal-input"
+                                    />
+                                    {regError && <div className="error-message">{regError}</div>}
+
+                                    <div className="modal-actions">
+                                        <button type="button" className="btn-secondary" onClick={() => setShowRegistrationModal(false)}>
+                                            Maybe Later
+                                        </button>
+                                        <button type="submit" className="btn-primary">
+                                            Save Account
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </div>
                     </div>
                 )}
 

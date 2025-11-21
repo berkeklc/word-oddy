@@ -10,7 +10,7 @@ const Auth = ({ onClose }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(false);
-    const { signIn, signUp } = useAuth();
+    const { signIn, signUp, linkAccount, isAnonymous } = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -19,6 +19,7 @@ const Auth = ({ onClose }) => {
 
         try {
             if (isLogin) {
+                // Login: Always use signIn (switches account if anonymous)
                 const { error } = await signIn(email, password);
                 if (error) throw error;
                 setSuccess(true);
@@ -26,10 +27,10 @@ const Auth = ({ onClose }) => {
                     onClose();
                 }, 1500);
             } else {
+                // Register
                 if (username.length < 3) {
                     throw new Error('Traveler name must be at least 3 runes long');
                 }
-
 
                 // More flexible email validation
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -37,44 +38,47 @@ const Auth = ({ onClose }) => {
                     throw new Error('Please enter a valid email address');
                 }
 
-
-                // Sign up
-                const { data, error } = await signUp(email, password, username);
-                if (error) throw error;
-
-                setSuccess(true);
-
-                // Auto-login logic:
-                // The new approach: with email confirmation disabled, we should get a session immediately
-
-                if (data.session) {
-                    // Got session immediately - email confirmation is disabled
+                if (isAnonymous) {
+                    // If anonymous, LINK the account instead of creating a new one
+                    const { error } = await linkAccount(email, password, username);
+                    if (error) throw error;
                     setSuccess(true);
-                    setTimeout(() => onClose(), 1000);
-                    return;
-                }
+                    setTimeout(() => onClose(), 1500);
+                } else {
+                    // Standard sign up (shouldn't happen often if auto-guest is on, but good fallback)
+                    const { data, error } = await signUp(email, password, username);
+                    if (error) throw error;
 
-                // If no session, try to sign in
-                try {
-                    const { data: signInData, error: signInError } = await signIn(email, password);
-                    if (!signInError && signInData.session) {
-                        // Success!
+                    setSuccess(true);
+
+                    // Auto-login logic
+                    if (data.session) {
                         setSuccess(true);
                         setTimeout(() => onClose(), 1000);
                         return;
                     }
-                } catch (signInErr) {
-                    console.error('Auto-login error:', signInErr);
-                }
 
-                // If we're here, email confirmation might be required
-                setSuccess(true);
-                setTimeout(() => {
-                    setError('Account created! Please check your email to confirm.');
-                    setSuccess(false);
-                }, 1500);
+                    // If no session, try to sign in
+                    try {
+                        const { data: signInData, error: signInError } = await signIn(email, password);
+                        if (!signInError && signInData.session) {
+                            setSuccess(true);
+                            setTimeout(() => onClose(), 1000);
+                            return;
+                        }
+                    } catch (signInErr) {
+                        console.error('Auto-login error:', signInErr);
+                    }
+
+                    setSuccess(true);
+                    setTimeout(() => {
+                        setError('Account created! Please check your email to confirm.');
+                        setSuccess(false);
+                    }, 1500);
+                }
             }
         } catch (err) {
+            console.error('Auth error:', err);
             setError(err.message);
         } finally {
             setLoading(false);
