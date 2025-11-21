@@ -10,6 +10,9 @@ import Profile from './components/Profile'
 import ParticleSystem from './components/ParticleSystem'
 import SettingsModal from './components/SettingsModal'
 import Auth from './components/Auth'
+import ComboDisplay from './components/ComboDisplay'
+import CreativeGame from './components/CreativeGame'
+import Leaderboard from './components/Leaderboard'
 import { levels } from './data/levels'
 import { soundManager } from './utils/SoundManager'
 import { useAuth } from './contexts/AuthContext'
@@ -23,7 +26,6 @@ function App() {
     const [showAuthModal, setShowAuthModal] = useState(false);
     const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
     const [score, setScore] = useState(0);
-    const [combo, setCombo] = useState(0);
     const [inventory, setInventory] = useState({ clear: 3 }); // Start with 3 Cleansing Crystals
     const [showSettings, setShowSettings] = useState(false);
     const [progressLoaded, setProgressLoaded] = useState(false);
@@ -42,8 +44,16 @@ function App() {
 
     const [stats, setStats] = useState(() => {
         const saved = localStorage.getItem('wordOdysseyStats');
-        return saved ? JSON.parse(saved) : { gamesPlayed: 0, totalWords: 0 };
+        return saved ? JSON.parse(saved) : {
+            gamesPlayed: 0,
+            totalWords: 0,
+            maxCombo: 0,
+            currentCombo: 0
+        };
     });
+
+    // Use stats.currentCombo as combo state
+    const combo = stats.currentCombo || 0;
 
     // Load progress from Supabase when user logs in (not for anonymous users)
     useEffect(() => {
@@ -101,7 +111,9 @@ function App() {
                 totalWords: stats.totalWords,
                 gamesPlayed: stats.gamesPlayed,
                 tutorialComplete: !showTutorial,
-                inventory
+                inventory,
+                maxCombo: stats.maxCombo || 0,
+                currentCombo: stats.currentCombo || 0
             });
         } catch (error) {
             console.error('Error saving progress:', error);
@@ -167,7 +179,19 @@ function App() {
     };
 
     const handleComboUpdate = (newCombo) => {
-        setCombo(newCombo);
+        setStats(prev => {
+            const updated = {
+                ...prev,
+                currentCombo: newCombo
+            };
+
+            // Update max combo if needed
+            if (newCombo > (prev.maxCombo || 0)) {
+                updated.maxCombo = newCombo;
+            }
+
+            return updated;
+        });
     };
 
     const handleLevelComplete = (bonus) => {
@@ -257,10 +281,14 @@ function App() {
             {gameState === 'menu' && (
                 <StartScreen
                     onStart={startGame}
+                    onCreative={() => setGameState('creative')}
                     onLevels={() => setGameState('level-select')}
                     onProfile={() => setGameState('profile')}
+                    onLeaderboard={() => setGameState('leaderboard')}
                     onSettings={() => setShowSettings(true)}
                     onAuth={handleOpenAuth}
+                    user={user}
+                    isAnonymous={isAnonymous}
                 />
             )}
 
@@ -279,6 +307,14 @@ function App() {
                     onBack={() => setGameState('menu')}
                     onOpenAuth={handleOpenAuth}
                 />
+            )}
+
+            {gameState === 'creative' && (
+                <CreativeGame onBack={() => setGameState('menu')} />
+            )}
+
+            {gameState === 'leaderboard' && (
+                <Leaderboard onBack={() => setGameState('menu')} />
             )}
 
             {gameState === 'tutorial' && (
@@ -307,6 +343,8 @@ function App() {
                     </header>
 
                     <ScoreBoard score={score} highScore={highScore} combo={combo} level={currentLevel.id} />
+
+                    <ComboDisplay combo={combo} maxCombo={stats.maxCombo || 0} />
 
                     <main className="game-board">
                         <Grid

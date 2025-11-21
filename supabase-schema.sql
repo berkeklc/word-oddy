@@ -30,6 +30,8 @@ create table if not exists game_progress (
   games_played integer default 0,
   tutorial_complete boolean default false,
   inventory jsonb default '{"clear": 3}'::jsonb,
+  max_combo integer default 0,
+  current_combo integer default 0,
   updated_at timestamp with time zone default timezone('utc'::text, now())
 );
 
@@ -43,6 +45,17 @@ create policy "Users can update own progress." on game_progress for update using
 
 drop policy if exists "Users can insert own progress." on game_progress;
 create policy "Users can insert own progress." on game_progress for insert with check (auth.uid() = user_id);
+
+-- Add combo columns if they don't exist (migration)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='game_progress' AND column_name='max_combo') THEN
+        ALTER TABLE game_progress ADD COLUMN max_combo integer default 0;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='game_progress' AND column_name='current_combo') THEN
+        ALTER TABLE game_progress ADD COLUMN current_combo integer default 0;
+    END IF;
+END $$;
 
 -- Function to handle new user creation
 create or replace function public.handle_new_user()

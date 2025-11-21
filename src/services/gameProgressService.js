@@ -27,6 +27,8 @@ export const gameProgressService = {
                 games_played: progress.gamesPlayed,
                 tutorial_complete: progress.tutorialComplete,
                 inventory: progress.inventory,
+                max_combo: progress.maxCombo || 0,
+                current_combo: progress.currentCombo || 0,
                 updated_at: new Date().toISOString()
             })
             .select();
@@ -59,5 +61,22 @@ export const gameProgressService = {
 
         // Save to Supabase
         return await this.saveProgress(userId, localProgress);
+    },
+
+    async getLeaderboard(mode = 'classic') {
+        const orderBy = mode === 'classic' ? 'high_score' : 'creative_high_score';
+
+        const { data, error } = await supabase
+            .from('leaderboard')
+            .select('*')
+            .order(orderBy, { ascending: false })
+            .limit(50);
+
+        if (error) {
+            console.error('Error fetching leaderboard:', error);
+            return [];
+        }
+
+        return data;
     }
 };

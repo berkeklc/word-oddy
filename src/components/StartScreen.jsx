@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import './StartScreen.css';
 
-const StartScreen = ({ onStart, onLevels, onProfile, onSettings, onAuth }) => {
+const StartScreen = ({ onStart, onCreative, onLevels, onProfile, onSettings, onAuth }) => {
     const { isAnonymous, profile } = useAuth();
 
     return (
@@ -27,6 +27,10 @@ const StartScreen = ({ onStart, onLevels, onProfile, onSettings, onAuth }) => {
             <div className="menu-actions">
                 <button className="btn-start" onClick={onStart}>
                     Start Journey
+                </button>
+
+                <button className="btn-start btn-creative" onClick={onCreative} style={{ marginTop: '10px', background: 'linear-gradient(45deg, #7209b7, #4361ee)' }}>
+                    Realm Rush
                 </button>
 
                 <div className="secondary-actions">

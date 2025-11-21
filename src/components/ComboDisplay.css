@@ -1,0 +1,299 @@
+.combo-display {
+    position: fixed;
+    top: 120px;
+    right: 20px;
+    background: linear-gradient(145deg, rgba(20, 15, 40, 0.95), rgba(30, 20, 50, 0.95));
+    border-radius: 20px;
+    padding: 1.5rem;
+    min-width: 120px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    animation: comboEnter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 50;
+    overflow: visible;
+}
+
+@keyframes comboEnter {
+    from {
+        opacity: 0;
+        transform: scale(0.5) translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.combo-main {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.combo-number {
+    font-size: 3rem;
+    font-weight: 900;
+    font-family: var(--font-title);
+    line-height: 1;
+    animation: comboNumber 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes comboNumber {
+    0% {
+        transform: scale(0.5);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.combo-multiplier {
+    font-size: 1.5rem;
+    font-weight: 700;
+    opacity: 0.8;
+}
+
+.combo-label {
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-top: 0.5rem;
+    animation: pulse 1s ease-in-out infinite;
+}
+
+.combo-progress {
+    margin-top: 1rem;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.combo-progress-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+/* Rarity Levels */
+.combo-display.common {
+    border-color: rgba(139, 139, 139, 0.5);
+}
+
+.combo-display.common .combo-number,
+.combo-display.common .combo-label {
+    color: #8b8b8b;
+    text-shadow: 0 0 10px rgba(139, 139, 139, 0.5);
+}
+
+.combo-display.common .combo-progress-bar {
+    background: linear-gradient(90deg, #8b8b8b, #a8a8a8);
+}
+
+.combo-display.uncommon {
+    border-color: rgba(76, 201, 240, 0.5);
+}
+
+.combo-display.uncommon .combo-number,
+.combo-display.uncommon .combo-label {
+    color: #4cc9f0;
+    text-shadow: 0 0 20px rgba(76, 201, 240, 0.6);
+}
+
+.combo-display.uncommon .combo-progress-bar {
+    background: linear-gradient(90deg, #4cc9f0, #6edaff);
+    box-shadow: 0 0 10px rgba(76, 201, 240, 0.4);
+}
+
+.combo-display.rare {
+    border-color: rgba(138, 73, 244, 0.5);
+}
+
+.combo-display.rare .combo-number,
+.combo-display.rare .combo-label {
+    color: #a749f4;
+    text-shadow: 0 0 20px rgba(167, 73, 244, 0.6);
+}
+
+.combo-display.rare .combo-progress-bar {
+    background: linear-gradient(90deg, #a749f4, #c78aff);
+    box-shadow: 0 0 15px rgba(167, 73, 244, 0.5);
+}
+
+.combo-display.epic {
+    border-color: rgba(255, 193, 7, 0.5);
+    animation: epicGlow 1.5s ease-in-out infinite;
+}
+
+.combo-display.epic .combo-number,
+.combo-display.epic .combo-label {
+    color: #ffd60a;
+    text-shadow: 0 0 25px rgba(255, 214, 10, 0.7);
+}
+
+.combo-display.epic .combo-progress-bar {
+    background: linear-gradient(90deg, #ffd60a, #ffed4e);
+    box-shadow: 0 0 20px rgba(255, 214, 10, 0.6);
+}
+
+@keyframes epicGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 214, 10, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 40px rgba(255, 214, 10, 0.6);
+    }
+}
+
+.combo-display.legendary {
+    border-color: rgba(255, 71, 87, 0.5);
+    animation: legendaryGlow 1s ease-in-out infinite;
+}
+
+.combo-display.legendary .combo-number,
+.combo-display.legendary .combo-label {
+    background: linear-gradient(45deg, #ff4757, #ffd60a, #4cc9f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+    animation: rainbowText 3s linear infinite;
+}
+
+@keyframes legendaryGlow {
+
+    0%,
+    100% {
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 71, 87, 0.4);
+        transform: scale(1);
+    }
+
+    50% {
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6), 0 0 50px rgba(255, 71, 87, 0.8);
+        transform: scale(1.05);
+    }
+}
+
+@keyframes rainbowText {
+    0% {
+        filter: hue-rotate(0deg);
+    }
+
+    100% {
+        filter: hue-rotate(360deg);
+    }
+}
+
+.combo-display.legendary .combo-progress-bar {
+    background: linear-gradient(90deg, #ff4757, #ffd60a, #4cc9f0, #a749f4);
+    background-size: 200% 100%;
+    box-shadow: 0 0 25px rgba(255, 71, 87, 0.7);
+    animation: rainbowProgress 2s linear infinite;
+}
+
+@keyframes rainbowProgress {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 200% 50%;
+    }
+}
+
+/* New Record Badge */
+.new-record-badge {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #ff4757, #ff6348);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 900;
+    box-shadow: 0 4px 15px rgba(255, 71, 87, 0.5);
+    animation: recordBadge 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+}
+
+@keyframes recordBadge {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px) scale(0.5);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+/* Particles */
+.combo-particles {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+.particle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: currentColor;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    animation: particleFloat 2s ease-out infinite;
+    animation-delay: var(--delay);
+    transform-origin: center;
+}
+
+@keyframes particleFloat {
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(var(--angle)) translateX(0) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--angle)) translateX(60px) scale(0);
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .combo-display {
+        top: 100px;
+        right: 10px;
+        padding: 1rem;
+        min-width: 100px;
+    }
+
+    .combo-number {
+        font-size: 2.5rem;
+    }
+
+    .combo-multiplier {
+        font-size: 1.2rem;
+    }
+
+    .combo-label {
+        font-size: 0.75rem;
+    }
+}

@@ -29,14 +29,24 @@ const Auth = ({ onClose }) => {
                 if (username.length < 3) {
                     throw new Error('Traveler name must be at least 3 runes long');
                 }
-                const { error } = await signUp(email, password, username);
+                const { data, error } = await signUp(email, password, username);
                 if (error) throw error;
+
                 setSuccess(true);
-                setTimeout(() => {
-                    setIsLogin(true);
-                    setSuccess(false);
-                    setError('A mystical scroll has been sent to your realm. Confirm to unlock your account!');
-                }, 2000);
+
+                // If session is established immediately (Email verification disabled), close modal
+                if (data?.session) {
+                    setTimeout(() => {
+                        onClose();
+                    }, 1500);
+                } else {
+                    // Email verification required
+                    setTimeout(() => {
+                        setIsLogin(true);
+                        setSuccess(false);
+                        setError('A mystical scroll has been sent to your realm. Confirm to unlock your account!');
+                    }, 2000);
+                }
             }
         } catch (err) {
             setError(err.message);

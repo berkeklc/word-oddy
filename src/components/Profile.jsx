@@ -44,6 +44,10 @@ const Profile = ({ stats, onBack, onOpenAuth }) => {
                         <span className="stat-value">{stats.maxLevel + 1}</span>
                     </div>
                     <div className="stat-card">
+                        <span className="stat-label">Max Combo</span>
+                        <span className="stat-value combo-highlight">{stats.maxCombo || 0}x</span>
+                    </div>
+                    <div className="stat-card">
                         <span className="stat-label">Total Words</span>
                         <span className="stat-value">{stats.totalWords || 0}</span>
                     </div>
