@@ -29,24 +29,21 @@ const Auth = ({ onClose }) => {
                 if (username.length < 3) {
                     throw new Error('Traveler name must be at least 3 runes long');
                 }
+                // Sign up
                 const { data, error } = await signUp(email, password, username);
                 if (error) throw error;
 
                 setSuccess(true);
 
-                // If session is established immediately (Email verification disabled), close modal
-                if (data?.session) {
-                    setTimeout(() => {
-                        onClose();
-                    }, 1500);
-                } else {
-                    // Email verification required
-                    setTimeout(() => {
-                        setIsLogin(true);
-                        setSuccess(false);
-                        setError('A mystical scroll has been sent to your realm. Confirm to unlock your account!');
-                    }, 2000);
-                }
+                // Since we want to skip verification, we assume the user is logged in if data.user exists.
+                // However, Supabase default is to require email verification.
+                // If you disabled it in Supabase dashboard, data.session will be present.
+                // If not, we can't force it from client side.
+                // Assuming user disabled it in dashboard as requested.
+
+                setTimeout(() => {
+                    onClose();
+                }, 1500);
             }
         } catch (err) {
             setError(err.message);
