@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { levels } from '../data/levels';
 import { dictionary } from '../data/dictionary';
 import { soundManager } from '../utils/SoundManager';
@@ -45,7 +45,12 @@ const CreativeGame = ({ onBack }) => {
     // Load saved progress from localStorage
     const [gridSize, setGridSize] = useState(() => {
         const saved = parseInt(localStorage.getItem('creativeGridSize'));
-        return (saved && !isNaN(saved) && saved >= 3) ? saved : 4;
+        const savedLevel = parseInt(localStorage.getItem('creativeMaxLevel') || '1');
+
+        // If level is 1, force grid size 4 regardless of what's saved (fixes stuck 6x6 issue)
+        if (savedLevel === 1) return 4;
+
+        return (saved && !isNaN(saved) && saved >= 3 && saved <= 10) ? saved : 4;
     });
     const [grid, setGrid] = useState([]);
     const [targetWords, setTargetWords] = useState([]);
@@ -85,6 +90,15 @@ const CreativeGame = ({ onBack }) => {
     });
     const [showOracleReveal, setShowOracleReveal] = useState(false);
     const [highlightedCells, setHighlightedCells] = useState([]);
+    // Idle Hint System
+    const [hintCellIndex, setHintCellIndex] = useState(null);
+    const idleTimerRef = useRef(null);
+    const [isShaking, setIsShaking] = useState(false);
+
+    const triggerShake = () => {
+        setIsShaking(true);
+        setTimeout(() => setIsShaking(false), 500);
+    };
 
     // Power-up costs
     const HINT_COST = 100;
@@ -342,6 +356,8 @@ const CreativeGame = ({ onBack }) => {
     };
 
     const activateBomb = (row, col) => {
+        triggerShake();
+        triggerParticles(window.innerWidth / 2, window.innerHeight / 2, 'explosion', 40); // Red particles
         setGrid(prev => {
             const newGrid = prev.map(r => [...r]);
             const size = newGrid.length;
@@ -451,15 +467,21 @@ const CreativeGame = ({ onBack }) => {
                 if (isValidWord && !foundWords.includes(selectedWord)) {
                     // Found a bonus word from the dictionary!
                     soundManager.playClick();
-                    triggerParticles(window.innerWidth / 2, window.innerHeight / 2, 'sparkle', 15);
+
+                    // Combo Multiplier Logic
+                    const multiplier = 1 + (combo * 0.1);
+                    const basePoints = selectedWord.length * 25;
+                    const bonusPoints = Math.round(basePoints * multiplier);
+
+                    triggerParticles(window.innerWidth / 2, window.innerHeight / 2, 'sparkle', 15, 'green');
 
                     setFoundWords(prev => [...prev, selectedWord]);
-                    const bonusPoints = selectedWord.length * 25; // Less points than target words
                     setScore(prev => prev + bonusPoints);
                     setSelectedCells([]);
 
-                    // Show feedback
-                    setBonusMessage(`✨ +${bonusPoints} Bonus Word!`);
+                    // Show feedback with multiplier
+                    const multText = multiplier > 1 ? ` (x${multiplier.toFixed(1)})` : '';
+                    setBonusMessage(`✨ +${bonusPoints}${multText} Bonus Word!`);
                     setTimeout(() => setBonusMessage(null), 1500);
 
                     // Small combo boost
@@ -467,42 +489,23 @@ const CreativeGame = ({ onBack }) => {
                 } else {
                     // Wrong - reset combo
                     soundManager.playError();
-                    setSelectedCells([]);
-                    setCombo(0);
+                    setCombo(0); // Reset combo on mistake
+                    triggerParticles(window.innerWidth / 2, window.innerHeight / 2, 'sparkle', 15, 'red');
+
+                    // Find an unfound target word
+                    const hiddenTarget = targetWords.find(tw => !tw.found);
+                    if (hiddenTarget) {
+                        setScore(prev => prev - HINT_COST);
+                        soundManager.playSelect();
+                        triggerParticles(window.innerWidth / 2, 100, 'sparkle', 15, 'lightblue');
+
+                        // Visual feedback - reveal first 2 letters
+                        const hintText = hiddenTarget.word.substring(0, 2) + '...';
+                        setBonusMessage(`💡 Hint: ${hintText} (-${HINT_COST})`);
+                        setTimeout(() => setBonusMessage(null), 3000);
+                    }
                 }
-            } else {
-                // Wrong - reset combo
-                soundManager.playError();
-                setSelectedCells([]);
-                setCombo(0);
             }
-        } else {
-            // Wrong - reset combo
-            soundManager.playError();
-            setSelectedCells([]);
-            setCombo(0);
-        }
-    };
-
-    const handleHint = () => {
-        if (score < HINT_COST) {
-            setBonusMessage(`❌ Need ${HINT_COST} points for a hint!`);
-            setTimeout(() => setBonusMessage(null), 2000);
-            soundManager.playError();
-            return;
-        }
-
-        // Find an unfound target word
-        const hiddenTarget = targetWords.find(tw => !tw.found);
-        if (hiddenTarget) {
-            setScore(prev => prev - HINT_COST);
-            soundManager.playSelect();
-            triggerParticles(window.innerWidth / 2, 100, 'sparkle', 15);
-
-            // Visual feedback - reveal first 2 letters
-            const hintText = hiddenTarget.word.substring(0, 2) + '...';
-            setBonusMessage(`💡 Hint: ${hintText} (-${HINT_COST})`);
-            setTimeout(() => setBonusMessage(null), 3000);
         }
     };
 
@@ -516,7 +519,7 @@ const CreativeGame = ({ onBack }) => {
 
         setScore(prev => prev - REROLL_COST);
         soundManager.playSelect();
-        triggerParticles(window.innerWidth / 2, window.innerHeight / 2, 'sparkle', 25);
+        triggerParticles(window.innerWidth / 2, window.innerHeight / 2, 'sparkle', 25, 'orange');
 
         generateGrid(gridSize, score - REROLL_COST);
         setBonusMessage(`🔄 Realm Reshuffled! (-${REROLL_COST})`);
@@ -559,6 +562,85 @@ const CreativeGame = ({ onBack }) => {
 
         setBonusMessage('⚡ Word Oracle Activated! ⚡');
         setTimeout(() => setBonusMessage(null), 2000);
+    };
+
+    const resetIdleTimer = () => {
+        if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+        setHintCellIndex(null);
+
+        idleTimerRef.current = setTimeout(() => {
+            // Find a hint: first letter of the first unrevealed target word
+            const unrevealedWord = targetWords.find(tw => !tw.found);
+            if (unrevealedWord) {
+                const firstLetter = unrevealedWord.word[0];
+                // Find this letter in the grid
+                const index = grid.findIndex(row => row.some(cell => cell.letter === firstLetter));
+                if (index !== -1) {
+                    const rowIndex = index;
+                    const colIndex = grid[rowIndex].findIndex(cell => cell.letter === firstLetter);
+                    // We need a flat index for the rendering logic if we were using flat map, 
+                    // but here we render by row/col. 
+                    // Let's store {row, col} in hintCellIndex instead of a number.
+                    setHintCellIndex({ row: rowIndex, col: colIndex });
+                }
+            }
+        }, 30000); // 30 seconds
+    };
+
+    useEffect(() => {
+        resetIdleTimer();
+        return () => {
+            if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+        };
+    }, [targetWords, grid, score]); // Reset on changes
+
+    const handleHint = () => {
+        if (score < HINT_COST) {
+            setBonusMessage(`❌ Need ${HINT_COST} points for a hint!`);
+            setTimeout(() => setBonusMessage(null), 2000);
+            soundManager.playError();
+            return;
+        }
+
+        // Find an unfound target word
+        const hiddenTarget = targetWords.find(tw => !tw.found);
+        if (hiddenTarget) {
+            setScore(prev => prev - HINT_COST);
+            soundManager.playSelect();
+            triggerParticles(window.innerWidth / 2, 100, 'sparkle', 15);
+
+            // Visual feedback - reveal first 2 letters
+            const hintText = hiddenTarget.word.substring(0, 2) + '...';
+            setBonusMessage(`💡 Hint: ${hintText} (-${HINT_COST})`);
+            setTimeout(() => setBonusMessage(null), 3000);
+        }
+    };
+
+    const handleTouchStart = (row, col) => {
+        resetIdleTimer();
+        setIsDragging(true);
+        setSelectedCells([{ row, col }]);
+        soundManager.playClick();
+
+        // Haptic feedback
+        if (window.navigator && window.navigator.vibrate) {
+            window.navigator.vibrate(10);
+        }
+    };
+
+    const handleTouchMove = (e) => {
+        resetIdleTimer();
+        if (!isDragging) return;
+
+        const touch = e.touches[0];
+        const element = document.elementFromPoint(touch.clientX, touch.clientY);
+
+        if (element && element.dataset.row && element.dataset.col) {
+            const row = parseInt(element.dataset.row);
+            const col = parseInt(element.dataset.col);
+
+            handleMouseEnter(row, col);
+        }
     };
 
     const handleMouseDown = (row, col) => {
@@ -739,13 +821,21 @@ const CreativeGame = ({ onBack }) => {
                             key={idx}
                             className={`target-word-chip ${tw.found ? 'found' : ''} ${showOracleReveal ? 'oracle-reveal' : ''}`}
                         >
-                            {showOracleReveal || tw.found ? tw.word : '?'.repeat(tw.word.length)}
+                            {showOracleReveal || tw.found ? (
+                                tw.word
+                            ) : (
+                                <div className="word-placeholder">
+                                    {tw.word.split('').map((_, i) => (
+                                        <span key={i} className="letter-slot"></span>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     ))}
                 </div>
             </div>
 
-            <div className="creative-grid-area">
+            <div className={`creative-grid-area ${isShaking ? 'shake-grid' : ''} ${combo >= 7 ? 'combo-heat-high' : combo >= 4 ? 'combo-heat-med' : combo >= 2 ? 'combo-heat-low' : ''}`}>
                 {bonusMessage && (
                     <div className="bonus-message-overlay">
                         {bonusMessage}
@@ -816,8 +906,7 @@ const CreativeGame = ({ onBack }) => {
                     className="creative-grid"
                     style={{
                         gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
-                        width: '100%',
-                        maxWidth: `${gridSize * 55}px`
+                        width: '100%'
                     }}
                 >
                     {grid.length === 0 && <div style={{ color: 'white', padding: '20px' }}>Grid is empty! Size: {gridSize}</div>}
@@ -827,11 +916,25 @@ const CreativeGame = ({ onBack }) => {
                             return (
                                 <div
                                     key={`${rIndex}-${cIndex}`}
-                                    className={`grid-cell ${isSelected ? 'selected' : ''} ${highlightedCells.some(h => h.row === rIndex && h.col === cIndex) ? 'oracle-highlight' : ''} ${cell.bonus ? `bonus-cell bonus-${cell.bonus}` : ''}`}
+                                    data-row={rIndex}
+                                    data-col={cIndex}
+                                    className={`grid-cell ${isSelected ? 'selected' : ''} ${highlightedCells.some(h => h.row === rIndex && h.col === cIndex) ? 'oracle-highlight' : ''} ${cell.bonus ? `bonus-cell bonus-${cell.bonus}` : ''} ${hintCellIndex && hintCellIndex.row === rIndex && hintCellIndex.col === cIndex ? 'hint-active' : ''}`}
                                     onClick={() => handleCellClick(rIndex, cIndex)}
-                                    onMouseDown={() => handleMouseDown(rIndex, cIndex)}
-                                    onMouseEnter={() => handleMouseEnter(rIndex, cIndex)}
+                                    onMouseDown={() => {
+                                        resetIdleTimer();
+                                        handleMouseDown(rIndex, cIndex);
+                                    }}
+                                    onMouseEnter={() => {
+                                        resetIdleTimer();
+                                        handleMouseEnter(rIndex, cIndex);
+                                    }}
                                     onMouseUp={handleMouseUp}
+                                    onTouchStart={(e) => {
+                                        e.preventDefault();
+                                        handleTouchStart(rIndex, cIndex);
+                                    }}
+                                    onTouchMove={handleTouchMove}
+                                    onTouchEnd={handleMouseUp}
                                     style={{ userSelect: 'none', cursor: 'pointer' }}
                                 >
                                     {cell.letter}
@@ -899,7 +1002,7 @@ const CreativeGame = ({ onBack }) => {
                 onPurchase={handlePowerUpPurchase}
                 inventory={inventory}
             />
-        </div>
+        </div >
     );
 };
 
