@@ -1,40 +1,44 @@
 import React, { useState } from 'react';
 import './InteractiveTutorial.css';
+import { useLanguage } from '../contexts/LanguageContext';
+import { translations } from '../data/translations';
 
 const InteractiveTutorial = ({ onComplete }) => {
+    const { language } = useLanguage();
+    const t = translations[language];
     const [step, setStep] = useState(0);
     const [demoInput, setDemoInput] = useState('');
 
     const tutorialSteps = [
         {
-            title: "Welcome, Kira",
-            instruction: "You are Kira, a relic seeker searching for your lost mentor in the Crystal Cave.",
+            title: t.tutorialWelcomeTitle,
+            instruction: t.tutorialWelcomeText,
             interactive: false
         },
         {
-            title: "Build a Path",
-            instruction: "Each word you solve lights a stepping stone, creating a path deeper into the cave.",
+            title: t.tutorialBuildPathTitle,
+            instruction: t.tutorialBuildPathText,
             interactive: false
         },
         {
-            title: "One Word at a Time",
-            instruction: "Focus on the current word. Type 'CAVE' using the keyboard below to light your first stone!",
+            title: t.tutorialOneWordTitle,
+            instruction: t.tutorialOneWordText,
             interactive: true,
-            word: "CAVE"
+            word: language === 'tr' ? "MAĞARA" : "CAVE"
         },
         {
-            title: "Keep Going!",
-            instruction: "Each solved word unlocks the next. Build your path one stone at a time until you reach the chamber's end.",
+            title: t.tutorialKeepGoingTitle,
+            instruction: t.tutorialKeepGoingText,
             interactive: false
         },
         {
-            title: "Power-Ups Help",
-            instruction: "Visit the 🏪 Shop to get helpful powers. The Cleansing Crystal (✨) is FREE and clears mistakes!",
+            title: t.tutorialPowerUpsTitle,
+            instruction: t.tutorialPowerUpsText,
             interactive: false
         },
         {
-            title: "Ready for Adventure!",
-            instruction: "Light the path through 5 chambers to find the Eternal Lantern and discover your mentor's fate. Good luck!",
+            title: t.tutorialReadyTitle,
+            instruction: t.tutorialReadyText,
             interactive: false
         }
     ];
@@ -106,12 +110,12 @@ const InteractiveTutorial = ({ onComplete }) => {
 
                 {!currentStep.interactive && (
                     <button className="btn-tutorial-next" onClick={handleNext}>
-                        {step === tutorialSteps.length - 1 ? 'Start Adventure' : 'Next'}
+                        {step === tutorialSteps.length - 1 ? t.tutorialStart : t.tutorialNext}
                     </button>
                 )}
 
                 <button className="btn-tutorial-skip" onClick={onComplete}>
-                    Skip Tutorial
+                    {t.tutorialSkip}
                 </button>
             </div>
         </div>

@@ -16,11 +16,16 @@ import Leaderboard from './components/Leaderboard'
 import { levels } from './data/levels'
 import { soundManager } from './utils/SoundManager'
 import { useAuth } from './contexts/AuthContext'
+import { useLanguage } from './contexts/LanguageContext'
+import { translations } from './data/translations'
 import { gameProgressService } from './services/gameProgressService'
 import './App.css'
 
 function App() {
     const { user, profile, loading: authLoading, getUserId, isAnonymous } = useAuth();
+    const { language, toggleLanguage } = useLanguage();
+    const t = translations[language];
+    const currentLanguageLevels = levels[language];
     const [isSoundOn, setIsSoundOn] = useState(true);
     const [gameState, setGameState] = useState('menu'); // menu, tutorial, story, playing, complete, level-select, profile
     const [showAuthModal, setShowAuthModal] = useState(false);
@@ -35,11 +40,11 @@ function App() {
     });
 
     const [highScore, setHighScore] = useState(() => {
-        return parseInt(localStorage.getItem('wordOdysseyHighScore') || '0');
+        return parseInt(localStorage.getItem(`wordOdysseyHighScore_${language}`) || '0');
     });
 
     const [maxLevelReached, setMaxLevelReached] = useState(() => {
-        return parseInt(localStorage.getItem('wordOdysseyMaxLevel') || '0');
+        return parseInt(localStorage.getItem(`wordOdysseyMaxLevel_${language}`) || '0');
     });
 
     const [stats, setStats] = useState(() => {
@@ -51,6 +56,13 @@ function App() {
             currentCombo: 0
         };
     });
+
+    // Update state when language changes
+    useEffect(() => {
+        setHighScore(parseInt(localStorage.getItem(`wordOdysseyHighScore_${language}`) || '0'));
+        setMaxLevelReached(parseInt(localStorage.getItem(`wordOdysseyMaxLevel_${language}`) || '0'));
+        setCurrentLevelIndex(0); // Reset to first level of the new language or handle persistence if needed
+    }, [language]);
 
     // Use stats.currentCombo as combo state
     const combo = stats.currentCombo || 0;
@@ -128,7 +140,7 @@ function App() {
         setShowAuthModal(true);
     };
 
-    const currentLevel = levels[currentLevelIndex];
+    const currentLevel = currentLanguageLevels[currentLevelIndex];
 
     const toggleSound = () => {
         const enabled = soundManager.toggle();
@@ -137,8 +149,8 @@ function App() {
 
     const handleResetProgress = () => {
         localStorage.removeItem('wordOdysseyTutorialComplete');
-        localStorage.removeItem('wordOdysseyHighScore');
-        localStorage.removeItem('wordOdysseyMaxLevel');
+        localStorage.removeItem(`wordOdysseyHighScore_${language}`);
+        localStorage.removeItem(`wordOdysseyMaxLevel_${language}`);
         localStorage.removeItem('wordOdysseyStats');
 
         setHighScore(0);
@@ -200,22 +212,22 @@ function App() {
 
         if (newScore > highScore) {
             setHighScore(newScore);
-            localStorage.setItem('wordOdysseyHighScore', newScore.toString());
+            localStorage.setItem(`wordOdysseyHighScore_${language}`, newScore.toString());
         }
 
         if (currentLevelIndex >= maxLevelReached) {
-            const nextMax = Math.min(currentLevelIndex + 1, levels.length - 1);
+            const nextMax = Math.min(currentLevelIndex + 1, currentLanguageLevels.length - 1);
             setMaxLevelReached(nextMax);
-            localStorage.setItem('wordOdysseyMaxLevel', nextMax.toString());
+            localStorage.setItem(`wordOdysseyMaxLevel_${language}`, nextMax.toString());
         }
 
-        setStats(prev => ({ ...prev, totalWords: prev.totalWords + levels[currentLevelIndex].words.length }));
+        setStats(prev => ({ ...prev, totalWords: prev.totalWords + currentLanguageLevels[currentLevelIndex].words.length }));
 
         setGameState('complete');
     };
 
     const handleNextLevel = () => {
-        if (currentLevelIndex < levels.length - 1) {
+        if (currentLevelIndex < currentLanguageLevels.length - 1) {
             setCurrentLevelIndex(prev => prev + 1);
             setGameState('story');
         } else {
@@ -289,12 +301,13 @@ function App() {
                     onAuth={handleOpenAuth}
                     user={user}
                     isAnonymous={isAnonymous}
+                    maxLevelReached={maxLevelReached}
                 />
             )}
 
             {gameState === 'level-select' && (
                 <LevelSelect
-                    levels={levels}
+                    levels={currentLanguageLevels}
                     maxLevelReached={maxLevelReached}
                     onSelectLevel={handleSelectLevel}
                     onBack={() => setGameState('menu')}
@@ -366,7 +379,7 @@ function App() {
                             onNextLevel={handleNextLevel}
                             score={score}
                             currentLevel={currentLevelIndex + 1}
-                            totalLevels={levels.length}
+                            totalLevels={currentLanguageLevels.length}
                         />
                     )}
                 </>

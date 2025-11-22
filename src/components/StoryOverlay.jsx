@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import './StoryOverlay.css';
 
+import { useLanguage } from '../contexts/LanguageContext';
+import { translations } from '../data/translations';
+
 const StoryOverlay = ({ level, onContinue }) => {
+    const { language } = useLanguage();
+    const t = translations[language];
     const [visibleText, setVisibleText] = useState('');
     const [isComplete, setIsComplete] = useState(false);
 
@@ -31,7 +36,7 @@ const StoryOverlay = ({ level, onContinue }) => {
                 <p className="story-text">{visibleText}</p>
 
                 <div className={`continue-prompt ${isComplete ? 'visible' : ''}`}>
-                    Tap to Enter
+                    {t.continue}
                 </div>
             </div>
         </div>

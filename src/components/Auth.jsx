@@ -1,8 +1,12 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import './Auth.css';
+import { useLanguage } from '../contexts/LanguageContext';
+import { translations } from '../data/translations';
 
 const Auth = ({ onClose }) => {
+    const { language } = useLanguage();
+    const t = translations[language];
     const [isLogin, setIsLogin] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -79,7 +83,11 @@ const Auth = ({ onClose }) => {
             }
         } catch (err) {
             console.error('Auth error:', err);
-            setError(err.message);
+            if (err.message && err.message.includes('Email logins are disabled')) {
+                setError('Email logins are currently disabled in the game server. Please enable Email Auth in your Supabase Dashboard.');
+            } else {
+                setError(err.message);
+            }
         } finally {
             setLoading(false);
         }
@@ -98,15 +106,15 @@ const Auth = ({ onClose }) => {
                     <div className="scroll-header">
                         <div className="rune-decoration">✦</div>
                         <h2 className="scroll-title">
-                            {isLogin ? 'Return, Traveler' : 'Join the Quest'}
+                            {isLogin ? t.welcomeBack : t.joinQuest}
                         </h2>
                         <div className="rune-decoration">✦</div>
                     </div>
 
                     <p className="scroll-subtitle">
                         {isLogin
-                            ? 'Your journey awaits, restore your progress from the ethereal realm'
-                            : 'Inscribe your name in the Book of Legends'}
+                            ? t.loginSubtitle
+                            : t.signupSubtitle}
                     </p>
 
                     {/* Success Message */}
@@ -126,13 +134,13 @@ const Auth = ({ onClose }) => {
                             <div className="form-group">
                                 <label className="mystical-label">
                                     <span className="label-icon">👤</span>
-                                    Traveler's Name
+                                    {t.travelerName}
                                 </label>
                                 <input
                                     type="text"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    placeholder="Enter your legendary name..."
+                                    placeholder={t.namePlaceholder}
                                     className="mystical-input"
                                     required
                                 />
@@ -142,7 +150,7 @@ const Auth = ({ onClose }) => {
                         <div className="form-group">
                             <label className="mystical-label">
                                 <span className="label-icon">📜</span>
-                                Ethereal Scroll
+                                {t.email}
                             </label>
                             <input
                                 type="email"
@@ -157,7 +165,7 @@ const Auth = ({ onClose }) => {
                         <div className="form-group">
                             <label className="mystical-label">
                                 <span className="label-icon">🔮</span>
-                                Secret Incantation
+                                {t.password}
                             </label>
                             <input
                                 type="password"
@@ -183,7 +191,7 @@ const Auth = ({ onClose }) => {
                                 <span>✓ Enchanted!</span>
                             ) : (
                                 <span>
-                                    {isLogin ? '⚔️ Enter the Realm' : '✨ Begin Journey'}
+                                    {isLogin ? t.login : t.signup}
                                 </span>
                             )}
                         </button>
@@ -200,8 +208,8 @@ const Auth = ({ onClose }) => {
                             }}
                         >
                             {isLogin
-                                ? "New to the realm? Create your legend"
-                                : "Already a legend? Return here"}
+                                ? t.needAccount
+                                : t.haveAccount}
                         </button>
                     </div>
 

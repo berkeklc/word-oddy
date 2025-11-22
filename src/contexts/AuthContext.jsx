@@ -13,64 +13,85 @@ export const AuthProvider = ({ children }) => {
     const [isAnonymous, setIsAnonymous] = useState(false);
 
     useEffect(() => {
-        console.log('AuthContext: Initializing...');
-        // Safety timeout to prevent infinite loading
-        const safetyTimeout = setTimeout(() => {
-            console.warn('AuthContext: Safety timeout triggered');
-            setLoading(false);
+        let mounted = true;
+
+        // Safety timeout: If nothing happens for 5 seconds, stop loading
+        const safetyTimer = setTimeout(() => {
+            if (mounted && loading) {
+                console.warn('AuthContext: Safety timeout triggered - forcing loading false');
+                setLoading(false);
+            }
         }, 5000);
 
-        // Check active sessions and sets the user
-        supabase.auth.getSession().then(({ data: { session }, error }) => {
-            if (error) throw error;
+        const initializeAuth = async () => {
+            try {
+                console.log('AuthContext: Initializing...');
 
-            console.log('AuthContext: getSession result', session ? 'Session found' : 'No session');
-            setSession(session);
-            setUser(session?.user ?? null);
+                // 1. Get initial session
+                const { data: { session: initialSession }, error } = await supabase.auth.getSession();
 
-            if (session?.user) {
-                console.log('AuthContext: User found, fetching profile...');
-                fetchProfile(session.user.id);
-                setIsAnonymous(session.user.is_anonymous);
-            } else {
-                // No session, sign in anonymously
-                console.log('AuthContext: No session, signing in anonymously...');
-                signInAnonymously();
-            }
-        }).catch((error) => {
-            console.error('AuthContext: Error getting session:', error);
-            // If session is invalid/corrupt, clear it and retry anonymous login
-            supabase.auth.signOut().then(() => {
-                console.log('AuthContext: Signed out after error, retrying anonymous login...');
-                signInAnonymously();
-            });
-            setLoading(false);
-        });
+                if (error) throw error;
 
-        // Listen for changes on auth state (logged in, signed out, etc.)
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('AuthContext: Auth state change:', event, session ? 'Session active' : 'No session');
-            setSession(session);
-            setUser(session?.user ?? null);
-
-            if (session?.user) {
-                await fetchProfile(session.user.id);
-                setIsAnonymous(session.user.is_anonymous);
-            } else {
-                setProfile(null);
-                // If signed out, sign in anonymously again to maintain a session
-                // Only try to sign in if we are not already loading (to avoid race with initial load)
-                if (!loading && event === 'SIGNED_OUT') {
-                    console.log('AuthContext: User signed out, re-signing in anonymously...');
-                    signInAnonymously();
+                if (mounted) {
+                    if (initialSession) {
+                        console.log('AuthContext: Session found');
+                        setSession(initialSession);
+                        setUser(initialSession.user);
+                        setIsAnonymous(initialSession.user?.is_anonymous);
+                        // Fetch profile but don't block loading state completely if it takes too long
+                        fetchProfile(initialSession.user.id).catch(console.error);
+                    } else {
+                        console.log('AuthContext: No session, signing in anonymously...');
+                        await signInAnonymously();
+                    }
                 }
+            } catch (error) {
+                console.error('AuthContext: Initialization error:', error);
+                // If error (e.g. network), try anonymous sign in as fallback
+                if (mounted && !session) {
+                    await signInAnonymously();
+                }
+            } finally {
+                if (mounted) setLoading(false);
             }
-            setLoading(false);
+        };
+
+        initializeAuth();
+
+        // 2. Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+            if (!mounted) return;
+
+            console.log('AuthContext: Auth state change:', event);
+
+            try {
+                setSession(currentSession);
+                setUser(currentSession?.user ?? null);
+
+                if (currentSession?.user) {
+                    setIsAnonymous(currentSession.user.is_anonymous);
+                    // Only fetch profile if it's a different user or we don't have one
+                    if (!profile || profile.id !== currentSession.user.id) {
+                        // Don't await profile fetch to avoid blocking UI
+                        fetchProfile(currentSession.user.id).catch(err =>
+                            console.error('AuthContext: Profile fetch failed in background:', err)
+                        );
+                    }
+                } else {
+                    setProfile(null);
+                    setIsAnonymous(false);
+                }
+            } catch (err) {
+                console.error('AuthContext: Error in auth state change handler:', err);
+            } finally {
+                setLoading(false);
+            }
         });
 
         return () => {
+            mounted = false;
+            clearTimeout(safetyTimer);
             subscription.unsubscribe();
-            clearTimeout(safetyTimeout);
         };
     }, []);
 
@@ -79,13 +100,9 @@ export const AuthProvider = ({ children }) => {
             const { data, error } = await supabase.auth.signInAnonymously();
             if (error) throw error;
             console.log('AuthContext: Signed in anonymously success');
-            // Explicitly set loading to false here to ensure app unblocks
-            setLoading(false);
             return data;
         } catch (error) {
             console.error('AuthContext: Error signing in anonymously:', error);
-            // If anonymous sign-in fails, we must stop loading to allow app to render (even if broken)
-            setLoading(false);
         }
     };
 
@@ -98,14 +115,14 @@ export const AuthProvider = ({ children }) => {
                 .single();
 
             if (error) {
-                console.warn('Error fetching profile:', error);
+                // If profile doesn't exist, it might be created by trigger shortly.
+                // We can ignore or retry.
+                console.warn('Error fetching profile (may be new user):', error.message);
             } else {
                 setProfile(data);
             }
         } catch (error) {
             console.error('Error in fetchProfile:', error);
-        } finally {
-            setLoading(false);
         }
     };
 

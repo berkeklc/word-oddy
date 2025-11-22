@@ -10,8 +10,12 @@ import TimedChallenge from './ChallengeTypes/TimedChallenge';
 import './Grid.css';
 import { soundManager } from '../utils/SoundManager';
 import { triggerParticles } from './ParticleSystem';
+import { useLanguage } from '../contexts/LanguageContext';
+import { translations } from '../data/translations';
 
 const Grid = ({ level, onLevelComplete, score, onScoreUpdate, combo, onComboUpdate, inventory, onPowerUpUse, onPowerUpPurchase }) => {
+    const { language } = useLanguage();
+    const t = translations[language];
     const [currentWordIndex, setCurrentWordIndex] = useState(0);
     const [currentInput, setCurrentInput] = useState('');
     const [solvedWords, setSolvedWords] = useState([]);
@@ -304,7 +308,7 @@ const Grid = ({ level, onLevelComplete, score, onScoreUpdate, combo, onComboUpda
             <div className="progress-header">
                 <div className="level-title">{level.title}</div>
                 <div className="progress-counter">
-                    {solvedWords.length} / {totalWords} words
+                    {solvedWords.length} / {totalWords} {t.words}
                 </div>
             </div>
 
@@ -343,7 +347,7 @@ const Grid = ({ level, onLevelComplete, score, onScoreUpdate, combo, onComboUpda
             {isComplete && (
                 <div className="completion-message">
                     <div className="completion-icon">🏮</div>
-                    <div className="completion-text">Path Complete!</div>
+                    <div className="completion-text">{t.levelComplete}</div>
                 </div>
             )}
 

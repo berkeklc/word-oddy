@@ -1,12 +1,16 @@
 import React from 'react';
 import './LevelSelect.css';
+import { useLanguage } from '../contexts/LanguageContext';
+import { translations } from '../data/translations';
 
 const LevelSelect = ({ levels, maxLevelReached, onSelectLevel, onBack }) => {
+    const { language } = useLanguage();
+    const t = translations[language];
     return (
         <div className="level-select-container">
             <header className="level-select-header">
-                <button className="btn-back" onClick={onBack}>← Back</button>
-                <h2>Select Level</h2>
+                <button className="btn-back" onClick={onBack}>← {t.back}</button>
+                <h2>{t.selectLevel}</h2>
             </header>
 
             <div className="levels-grid">

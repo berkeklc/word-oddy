@@ -4,6 +4,8 @@ import { dictionary } from '../data/dictionary';
 import { soundManager } from '../utils/SoundManager';
 import { triggerParticles } from './ParticleSystem';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
+import { translations } from '../data/translations';
 import { gameProgressService } from '../services/gameProgressService';
 import ComboDisplay from './ComboDisplay';
 import PowerUpShop from './PowerUpShop';
@@ -11,13 +13,18 @@ import { bonusTypes } from '../data/bonusTypes';
 import { powerUps } from '../data/powerUps';
 import './CreativeGame.css';
 
-// Helper to get random letters based on weighted frequency (English)
-const getRandomLetter = () => {
-    const weights = {
+// Helper to get random letters based on weighted frequency
+const getRandomLetter = (language = 'en') => {
+    const weights = language === 'en' ? {
         'E': 12.7, 'T': 9.1, 'A': 8.2, 'O': 7.5, 'I': 7.0, 'N': 6.7, 'S': 6.3,
         'H': 6.1, 'R': 6.0, 'D': 4.3, 'L': 4.0, 'C': 2.8, 'U': 2.8, 'M': 2.4,
         'W': 2.4, 'F': 2.2, 'G': 2.0, 'Y': 2.0, 'P': 1.9, 'B': 1.5, 'V': 1.0,
         'K': 0.8, 'J': 0.15, 'X': 0.15, 'Q': 0.10, 'Z': 0.07
+    } : {
+        'A': 11.9, 'E': 8.9, 'İ': 8.6, 'N': 7.4, 'R': 6.7, 'L': 5.9, 'I': 5.1,
+        'D': 4.7, 'K': 4.5, 'M': 3.7, 'U': 3.2, 'Y': 3.2, 'T': 3.0, 'S': 3.0,
+        'B': 2.8, 'O': 2.4, 'Ü': 1.8, 'Ş': 1.7, 'Z': 1.5, 'G': 1.3, 'Ç': 1.2,
+        'H': 1.2, 'V': 0.9, 'C': 0.9, 'Ö': 0.7, 'P': 0.7, 'F': 0.4, 'J': 0.03, 'Ğ': 1.1
     };
 
     let sum = 0;
@@ -27,11 +34,13 @@ const getRandomLetter = () => {
         sum += weights[char];
         if (r <= sum) return char;
     }
-    return 'E'; // Fallback
+    return language === 'en' ? 'E' : 'A'; // Fallback
 };
 
 const CreativeGame = ({ onBack }) => {
     const { user, isAnonymous, linkAccount } = useAuth();
+    const { language } = useLanguage();
+    const t = translations[language];
 
     // Load saved progress from localStorage
     const [gridSize, setGridSize] = useState(() => {
@@ -81,16 +90,23 @@ const CreativeGame = ({ onBack }) => {
     const HINT_COST = 100;
     const REROLL_COST = 200;
 
-    // Pool of words to choose from (using existing levels data + some extras)
+    // Pool of words to choose from
     const getWordPool = (currentGridSize) => {
         const pool = new Set();
-        levels.forEach(l => l.words.forEach(w => {
+        // Use current language levels
+        const currentLevels = levels[language] || levels['en'];
+        currentLevels.forEach(l => l.words.forEach(w => {
             if (w.answer.length >= 3 && w.answer.length <= currentGridSize) {
                 pool.add(w.answer);
             }
         }));
+
         // Add some common words if pool is small
-        ['THE', 'AND', 'FOR', 'ARE', 'BUT', 'NOT', 'YOU', 'ALL', 'ANY', 'CAN', 'HAD', 'HAS', 'HIM', 'HIS', 'HOW', 'INK', 'MAN', 'NEW', 'NOW', 'OLD', 'SEE', 'TWO', 'WAY', 'WHO', 'BOY', 'DID', 'ITS', 'LET', 'PUT', 'SAY', 'SHE', 'TOO', 'USE', 'DAD', 'MOM', 'CLEAN'].forEach(w => {
+        const commonWords = language === 'en'
+            ? ['THE', 'AND', 'FOR', 'ARE', 'BUT', 'NOT', 'YOU', 'ALL', 'ANY', 'CAN', 'HAD', 'HAS', 'HIM', 'HIS', 'HOW', 'INK', 'MAN', 'NEW', 'NOW', 'OLD', 'SEE', 'TWO', 'WAY', 'WHO', 'BOY', 'DID', 'ITS', 'LET', 'PUT', 'SAY', 'SHE', 'TOO', 'USE', 'DAD', 'MOM', 'CLEAN']
+            : ['VE', 'BİR', 'BU', 'NE', 'DE', 'DA', 'BEN', 'SEN', 'O', 'BİZ', 'SİZ', 'ONLAR', 'VAR', 'YOK', 'EVET', 'HAYIR', 'AMA', 'İÇİN', 'İLE', 'GİBİ', 'KİM', 'NE', 'NASIL', 'NEDEN', 'ZAMAN', 'ŞİMDİ', 'SONRA', 'ÖNCE', 'BUGÜN', 'YARIN', 'DÜN'];
+
+        commonWords.forEach(w => {
             if (w.length <= currentGridSize) pool.add(w);
         });
         return Array.from(pool);
@@ -105,11 +121,11 @@ const CreativeGame = ({ onBack }) => {
             let newGrid = Array(size).fill(null).map(() => Array(size).fill(null));
             let placedWords = [];
 
-            if (!levels || levels.length === 0) {
+            if (!levels || !levels[language]) {
                 console.error('Levels data missing in generateGrid');
                 throw new Error('Levels data missing');
             }
-            console.log('Levels data found:', levels.length);
+            console.log('Levels data found for language:', language);
 
             const wordPool = getWordPool(size);
             console.log('Word pool size:', wordPool.length);
@@ -198,7 +214,7 @@ const CreativeGame = ({ onBack }) => {
                         }
 
                         newGrid[r][c] = {
-                            letter: getRandomLetter(),
+                            letter: getRandomLetter(language),
                             bonus: bonus,
                             id: `cell-${r}-${c}-${Date.now()}`,
                             isTarget: false
@@ -218,7 +234,7 @@ const CreativeGame = ({ onBack }) => {
             console.log('Generating fallback grid...');
             const fallbackGrid = Array(size).fill(null).map((_, r) =>
                 Array(size).fill(null).map((_, c) => ({
-                    letter: getRandomLetter(),
+                    letter: getRandomLetter(language),
                     bonus: null,
                     id: `fallback-${r}-${c}`,
                     isTarget: false
@@ -233,7 +249,7 @@ const CreativeGame = ({ onBack }) => {
     useEffect(() => {
         console.log('Initial useEffect calling generateGrid');
         generateGrid(gridSize, score);
-    }, []);
+    }, [language]); // Regenerate when language changes
 
     // Persistence
     useEffect(() => {
@@ -375,7 +391,7 @@ const CreativeGame = ({ onBack }) => {
         }
 
         if (targetMatch) {
-            // Success!
+            // Found a target word - big points!
             soundManager.playSuccess();
             triggerParticles(window.innerWidth / 2, window.innerHeight / 2, 'sparkle', 30);
 
@@ -387,33 +403,34 @@ const CreativeGame = ({ onBack }) => {
             setScore(prev => prev + (targetMatch.word.length * 100));
             setSelectedCells([]);
 
-            // Handle bonuses
-            const newGrid = [...grid.map(row => [...row])];
-            let gridChanged = false;
+            // Increase combo
+            const newCombo = combo + 1;
+            setCombo(newCombo);
 
+            // Check for bonuses
+            let gridChanged = false;
+            const newGrid = grid.map(r => [...r]);
             selectedCells.forEach((cell, index) => {
                 const gridCell = newGrid[cell.row][cell.col];
                 if (gridCell.bonus) {
-                    // Activate bonus
-                    if (gridCell.bonus === 'giftbox') activateGiftBox();
+                    if (gridCell.bonus === 'gift') activateGiftBox();
+                    else if (gridCell.bonus === 'rainbow') {
+                        // Rainbow bonus consumes itself and takes the letter from the found word
+                        newGrid[cell.row][cell.col] = {
+                            ...gridCell,
+                            bonus: null,
+                            letter: targetMatch.word[index]
+                        };
+                    }
                     else if (gridCell.bonus === 'rocket_h') activateRocket(false, cell.row, cell.col);
                     else if (gridCell.bonus === 'rocket_v') activateRocket(true, cell.row, cell.col);
                     else if (gridCell.bonus === 'bomb') activateBomb(cell.row, cell.col);
 
-                    // Consume bonus
-                    newGrid[cell.row][cell.col] = {
-                        ...gridCell,
-                        bonus: null,
-                        letter: gridCell.bonus === 'rainbow' ? targetMatch.word[index] : gridCell.letter
-                    };
+                    newGrid[cell.row][cell.col] = { ...gridCell, bonus: null };
                     gridChanged = true;
                 }
             });
             if (gridChanged) setGrid(newGrid);
-
-            // Increase combo
-            const newCombo = combo + 1;
-            setCombo(newCombo);
 
             // Auto-activate oracle at 7 combo
             if (newCombo === 7 && inventory.oracle > 0) {
@@ -425,40 +442,45 @@ const CreativeGame = ({ onBack }) => {
             if (foundCount >= wordsToFindCount) {
                 handleLevelUp();
             }
-        } else {
-            // Check dictionary for bonus points (skip wildcard check for dictionary to keep it simple for now)
-            if (!selectedWord.includes('.') && dictionary.includes(selectedWord) && !foundWords.includes(selectedWord)) {
-                soundManager.playSuccess();
-                setScore(prev => prev + (selectedWord.length * 50)); // Half points for bonus words
-                setBonusMessage(`Bonus: ${selectedWord}! +${selectedWord.length * 50}`);
-                setTimeout(() => setBonusMessage(null), 2000);
-                setSelectedCells([]);
-                // Increase combo for bonus words too
-                setCombo(prev => prev + 1);
+        } else if (!targetMatch && selectedWord.length >= 3) {
+            // Check if it's a valid dictionary word (no wildcards for dictionary)
+            if (!selectedWord.includes('.')) {
+                const currentDict = dictionary[language] || dictionary['en'];
+                const isValidWord = currentDict.includes(selectedWord);
 
-                // Also check for bonuses in dictionary words
-                const newGrid = [...grid.map(row => [...row])];
-                let gridChanged = false;
-                selectedCells.forEach(cell => {
-                    const gridCell = newGrid[cell.row][cell.col];
-                    if (gridCell.bonus) {
-                        if (gridCell.bonus === 'giftbox') activateGiftBox();
-                        else if (gridCell.bonus === 'rocket_h') activateRocket(false, cell.row, cell.col);
-                        else if (gridCell.bonus === 'rocket_v') activateRocket(true, cell.row, cell.col);
-                        else if (gridCell.bonus === 'bomb') activateBomb(cell.row, cell.col);
+                if (isValidWord && !foundWords.includes(selectedWord)) {
+                    // Found a bonus word from the dictionary!
+                    soundManager.playClick();
+                    triggerParticles(window.innerWidth / 2, window.innerHeight / 2, 'sparkle', 15);
 
-                        newGrid[cell.row][cell.col] = { ...gridCell, bonus: null };
-                        gridChanged = true;
-                    }
-                });
-                if (gridChanged) setGrid(newGrid);
+                    setFoundWords(prev => [...prev, selectedWord]);
+                    const bonusPoints = selectedWord.length * 25; // Less points than target words
+                    setScore(prev => prev + bonusPoints);
+                    setSelectedCells([]);
 
+                    // Show feedback
+                    setBonusMessage(`✨ +${bonusPoints} Bonus Word!`);
+                    setTimeout(() => setBonusMessage(null), 1500);
+
+                    // Small combo boost
+                    setCombo(prev => prev + 1);
+                } else {
+                    // Wrong - reset combo
+                    soundManager.playError();
+                    setSelectedCells([]);
+                    setCombo(0);
+                }
             } else {
                 // Wrong - reset combo
                 soundManager.playError();
                 setSelectedCells([]);
                 setCombo(0);
             }
+        } else {
+            // Wrong - reset combo
+            soundManager.playError();
+            setSelectedCells([]);
+            setCombo(0);
         }
     };
 
@@ -689,11 +711,11 @@ const CreativeGame = ({ onBack }) => {
             <header className="creative-header">
                 <button className="btn-icon" onClick={onBack}>🏠</button>
                 <div className="creative-stat">
-                    <span className="stat-label">Level</span>
+                    <span className="stat-label">{t.level}</span>
                     <span className="stat-value">{level}</span>
                 </div>
                 <div className="creative-stat">
-                    <span className="stat-label">Score</span>
+                    <span className="stat-label">{t.score}</span>
                     <span className="stat-value">{score}</span>
                 </div>
                 <div className="creative-stat">
@@ -708,7 +730,7 @@ const CreativeGame = ({ onBack }) => {
             <div className="target-words-container">
                 <div className="target-words-header">
                     <span className="header-icon">🎯</span>
-                    <span className="header-text">Find These Words</span>
+                    <span className="header-text">{t.words}</span>
                     <span className="header-count">{targetWords.filter(tw => tw.found).length}/{targetWords.length}</span>
                 </div>
                 <div className="target-words">

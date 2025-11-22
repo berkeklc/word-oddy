@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import './ScoreBoard.css';
+import { useLanguage } from '../contexts/LanguageContext';
+import { translations } from '../data/translations';
 
 const ScoreBoard = ({ score, highScore, combo, level }) => {
+    const { language } = useLanguage();
+    const t = translations[language];
     const [displayScore, setDisplayScore] = useState(0);
 
     useEffect(() => {
@@ -30,12 +34,12 @@ const ScoreBoard = ({ score, highScore, combo, level }) => {
         <div className="scoreboard">
             <div className="score-group">
                 <div className="score-container">
-                    <span className="score-label">ESSENCE</span>
+                    <span className="score-label">{t.essence}</span>
                     <span className="score-value">{displayScore.toLocaleString()}</span>
                 </div>
                 {highScore > 0 && (
                     <div className="highscore-container">
-                        <span className="score-label">BEST</span>
+                        <span className="score-label">{t.best}</span>
                         <span className="highscore-value">{highScore.toLocaleString()}</span>
                     </div>
                 )}
@@ -44,7 +48,7 @@ const ScoreBoard = ({ score, highScore, combo, level }) => {
             {combo > 1 && (
                 <div className="combo-container">
                     <div className="combo-value">{combo}x</div>
-                    <div className="combo-label">COMBO</div>
+                    <div className="combo-label">{t.combo}</div>
                 </div>
             )}
         </div>

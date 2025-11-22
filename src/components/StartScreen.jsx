@@ -1,82 +1,84 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import MiniLeaderboard from './MiniLeaderboard';
+import { useLanguage } from '../contexts/LanguageContext';
+import { translations } from '../data/translations';
 import './StartScreen.css';
 
-const StartScreen = ({ onStart, onCreative, onLevels, onProfile, onLeaderboard, onSettings, onAuth }) => {
-    const { isAnonymous, profile, signOut } = useAuth();
-
-    const handleLogout = async () => {
-        await signOut();
-    };
+const StartScreen = ({ onStart, onCreative, onLevels, onProfile, onLeaderboard, onSettings, onAuth, maxLevelReached }) => {
+    const { isAnonymous, profile } = useAuth();
+    const { language, toggleLanguage } = useLanguage();
+    const t = translations[language];
 
     return (
         <div className="start-screen">
-            <button className="btn-settings-corner" onClick={onSettings}>
-                ⚙️
-            </button>
+            <div className="hero-section">
+                <div className="title-container">
+                    <h1 className="main-title">
+                        <span className="title-word">{t.title}</span>
+                        <span className="title-highlight">{t.titleHighlight}</span>
+                    </h1>
+                    <p className="subtitle">{t.subtitle}</p>
+                </div>
 
-            {/* Login/Account button in top right */}
-            {isAnonymous ? (
-                <button className="btn-account-corner" onClick={onAuth}>
-                    🔓 Login
+                <button className="lang-toggle-pill" onClick={toggleLanguage}>
+                    <span className={`lang-opt ${language === 'en' ? 'active' : ''}`}>EN</span>
+                    <span className="lang-sep">/</span>
+                    <span className={`lang-opt ${language === 'tr' ? 'active' : ''}`}>TR</span>
                 </button>
-            ) : (
-                <>
-                    <button
-                        className="btn-account-corner"
-                        onClick={onAuth}
-                        style={{ right: '130px' }}
-                    >
-                        👤 {profile?.username || 'Account'}
-                    </button>
-                    <button
-                        className="btn-account-corner"
-                        onClick={handleLogout}
-                        style={{
-                            right: '15px',
-                            background: 'rgba(220, 53, 69, 0.2)',
-                            borderColor: '#dc3545'
-                        }}
-                        title="Logout"
-                    >
-                        🚪
-                    </button>
-                </>
-            )}
-
-            <div className="logo-container">
-                <h1 className="game-title">Word <br /><span className="highlight">Odyssey</span></h1>
-                <p className="subtitle">Illuminate the path.</p>
-                {isAnonymous && (
-                    <p className="anon-badge">⚡ Playing as Wanderer</p>
-                )}
             </div>
 
-            <div className="menu-actions">
-                <button className="btn-start" onClick={onStart}>
-                    Start Journey
-                </button>
+            <div className="menu-card">
+                <div className="menu-handle"></div>
 
-                <button className="btn-start btn-creative" onClick={onCreative} style={{ marginTop: '10px', background: 'linear-gradient(45deg, #7209b7, #4361ee)' }}>
-                    Realm Rush
-                </button>
-
-                <div className="secondary-actions">
-                    <button className="btn-secondary" onClick={onLevels}>
-                        <span className="icon">🗺️</span> Levels
+                <div className="primary-actions">
+                    <button className="btn-start-journey" onClick={onStart}>
+                        <span className="btn-content">
+                            <span className="btn-icon">⚔️</span>
+                            <span className="btn-text">
+                                <span className="btn-label">{t.startJourney}</span>
+                                <span className="btn-sub">{t.level} {(maxLevelReached || 0) + 1}</span>
+                            </span>
+                        </span>
+                        <span className="btn-arrow">→</span>
                     </button>
-                    <button className="btn-secondary" onClick={onProfile}>
-                        <span className="icon">👤</span> Profile
+
+                    <button className="btn-creative" onClick={onCreative}>
+                        <span className="btn-icon">✨</span>
+                        <span className="btn-text">{t.creativeMode}</span>
                     </button>
                 </div>
-            </div>
 
-            <MiniLeaderboard onViewFull={onLeaderboard} />
+                <div className="secondary-actions">
+                    <button className="btn-icon-circle" onClick={onLevels} aria-label={t.levelSelect}>
+                        <span className="icon">🗺️</span>
+                        <span className="label">{t.level}</span>
+                    </button>
+                    <button className="btn-icon-circle" onClick={onLeaderboard} aria-label={t.leaderboard}>
+                        <span className="icon">🏆</span>
+                        <span className="label">{t.rank}</span>
+                    </button>
+                    <button className="btn-icon-circle" onClick={onProfile} aria-label={t.profile}>
+                        <span className="icon">👤</span>
+                        <span className="label">{t.profile}</span>
+                    </button>
+                    <button className="btn-icon-circle" onClick={onSettings} aria-label={t.settings}>
+                        <span className="icon">⚙️</span>
+                        <span className="label">{t.settings}</span>
+                    </button>
+                </div>
 
-            <div className="footer-decoration">
-                <div className="lantern-icon">🏮</div>
-                <p className="version-text">v1.0.0</p>
+                <div className="auth-status">
+                    {profile ? (
+                        <div className="user-pill" onClick={onProfile}>
+                            <span className="status-dot online"></span>
+                            {isAnonymous ? t.guest : profile.email?.split('@')[0]}
+                        </div>
+                    ) : (
+                        <button className="btn-text-auth" onClick={onAuth}>
+                            {t.login}
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );

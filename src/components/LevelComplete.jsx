@@ -1,8 +1,12 @@
 import React, { useEffect } from 'react';
 import './LevelComplete.css';
 import { triggerParticles } from './ParticleSystem';
+import { useLanguage } from '../contexts/LanguageContext';
+import { translations } from '../data/translations';
 
 const LevelComplete = ({ onNextLevel, score, currentLevel, totalLevels }) => {
+    const { language } = useLanguage();
+    const t = translations[language];
     const getRank = (s) => {
         if (s > 2000) return 'S';
         if (s > 1500) return 'A';
@@ -36,24 +40,24 @@ const LevelComplete = ({ onNextLevel, score, currentLevel, totalLevels }) => {
                 </div>
 
                 <h2 className="complete-title">
-                    {isLastLevel ? 'All Levels Complete!' : 'Level Complete!'}
+                    {isLastLevel ? t.levelComplete : t.levelComplete}
                 </h2>
 
                 <div className="complete-stats">
                     <div className="stat-item">
                         <div className="stat-value">{wordsCompleted}</div>
-                        <div className="stat-label">Words</div>
+                        <div className="stat-label">{t.words}</div>
                     </div>
                     <div className="stat-item">
                         <div className="stat-value">{score}</div>
-                        <div className="stat-label">Score</div>
+                        <div className="stat-label">{t.score}</div>
                     </div>
                 </div>
 
                 <div className="rank-badge">RANK {rank}</div>
 
                 <button className="btn-next" onClick={onNextLevel}>
-                    {isLastLevel ? 'Play Again' : 'Next Level →'}
+                    {isLastLevel ? t.home : t.nextLevel}
                 </button>
             </div>
         </div>

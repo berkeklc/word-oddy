@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { gameProgressService } from '../services/gameProgressService';
 import './Leaderboard.css';
+import { useLanguage } from '../contexts/LanguageContext';
+import { translations } from '../data/translations';
 
 const Leaderboard = ({ onBack }) => {
+    const { language } = useLanguage();
+    const t = translations[language];
     const [activeTab, setActiveTab] = useState('classic'); // 'classic' or 'creative'
     const [leaders, setLeaders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -24,7 +28,7 @@ const Leaderboard = ({ onBack }) => {
         <div className="leaderboard-container">
             <header className="leaderboard-header">
                 <button className="btn-icon" onClick={onBack}>🏠</button>
-                <h2>Global Leaderboard</h2>
+                <h2>{t.leaderboard}</h2>
                 <button className="btn-icon" onClick={fetchLeaderboard}>🔄</button>
             </header>
 
@@ -33,28 +37,28 @@ const Leaderboard = ({ onBack }) => {
                     className={`tab-btn ${activeTab === 'classic' ? 'active' : ''}`}
                     onClick={() => setActiveTab('classic')}
                 >
-                    Classic Journey
+                    {t.journeyMode}
                 </button>
                 <button
                     className={`tab-btn ${activeTab === 'creative' ? 'active' : ''}`}
                     onClick={() => setActiveTab('creative')}
                 >
-                    Realm Rush
+                    {t.creativeMode}
                 </button>
             </div>
 
             <div className="leaderboard-content">
                 {loading ? (
-                    <div className="loading-spinner">Loading champions...</div>
+                    <div className="loading-spinner">{t.loading}</div>
                 ) : leaders.length === 0 ? (
-                    <div className="empty-state">No records yet. Be the first!</div>
+                    <div className="empty-state">{t.noRecords}</div>
                 ) : (
                     <div className="leaders-list">
                         <div className="leaders-header-row">
                             <span className="rank-col">#</span>
-                            <span className="player-col">Player</span>
-                            <span className="score-col">Score</span>
-                            <span className="level-col">Level</span>
+                            <span className="player-col">{t.player}</span>
+                            <span className="score-col">{t.score}</span>
+                            <span className="level-col">{t.level}</span>
                         </div>
                         {leaders.map((player, index) => (
                             <div key={index} className={`leader-row rank-${index + 1}`}>
@@ -63,7 +67,7 @@ const Leaderboard = ({ onBack }) => {
                                 </span>
                                 <span className="player-col">
                                     <span className="avatar">{player.avatar_url || '👤'}</span>
-                                    {player.username || 'Anonymous'}
+                                    {player.username || t.anonymous}
                                 </span>
                                 <span className="score-col">
                                     {activeTab === 'classic' ? player.high_score : player.creative_high_score}
