@@ -30,3 +30,8 @@ dist-ssr
 
 # Scripts with sensitive data
 scripts/
+
+# Database scripts and tasks
+*.sql
+SETUP-COMPLETE.md
+task.md
